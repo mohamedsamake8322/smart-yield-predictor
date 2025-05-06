@@ -16,6 +16,22 @@ from datetime import datetime
 from streamlit_folium import st_folium
 
 st.set_page_config(page_title="Smart Yield Predictor", layout="wide")
+# =========================================
+#      INIT USERS FILE IF NOT EXISTS
+# =========================================
+users_file = "users.json"
+if not os.path.exists(users_file):
+    default_password = os.environ.get("DEFAULT_ADMIN_PASSWORD", "admin123")
+    hashed = bcrypt.hashpw(default_password.encode(), bcrypt.gensalt()).decode()
+    default_users = {
+        "admin": {
+            "password": hashed,
+            "role": "admin"
+        }
+    }
+ with open(users_file, "w") as f:
+    json.dump(default_users, f, indent=4)
+print("✅ Default admin user created: username = 'admin', password = 'admin123'")
 
 # =========================================
 #         AUTHENTICATION SYSTEM
@@ -132,8 +148,7 @@ if os.path.exists(model_path):
         explainer = shap.Explainer(model)
         shap_enabled = True
     except Exception as e:
-        st.warning(f"SHAP could not be initialized: {e}")
-
+        print(f"⚠️ SHAP init warning: {e}")
 # =========================================
 #               FUNCTIONS
 # =========================================
@@ -163,8 +178,10 @@ def save_prediction(inputs, prediction, location=None, source="manual"):
     }
     df = pd.DataFrame([entry])
     file = "prediction_history.csv"
+    try:
     df.to_csv(file, mode='a', header=not os.path.exists(file), index=False)
-
+except Exception as e:
+    st.error(f"❌ Error saving prediction: {e}")
 def display_map():
     m = folium.Map(location=[14.5, -14.5], zoom_start=5)
     return st_folium(m, height=300, width=700)
