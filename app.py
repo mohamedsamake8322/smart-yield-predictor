@@ -238,6 +238,8 @@ with tab2:
                 save_prediction(st.session_state.inputs, prediction, location=latlon)
         else:
             st.warning("⚠️ Please make a prediction first in the 'Manual Input' tab.")
+            except Exception as e:
+                st.error(f"❌ Error rendering map: {e}")
 
 # Tab 3: CSV Upload
 with tab3:
