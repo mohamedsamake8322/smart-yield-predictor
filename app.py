@@ -167,13 +167,15 @@ def save_prediction(inputs, prediction, location=None, source="manual"):
 def show_visualizations():
     if os.path.exists(PREDICTION_FILE):
         df = pd.read_csv(PREDICTION_FILE)
+        df = df.sort_values("Timestamp")
+        df["Timestamp"] = pd.to_datetime(df["Timestamp"], errors='coerce')
         st.markdown(f"**Average Yield:** {df['Predicted_Yield'].mean():.2f} | Max: {df['Predicted_Yield'].max():.2f} | Min: {df['Predicted_Yield'].min():.2f}")
         col1, col2 = st.columns(2)
         with col1:
             plt.figure(figsize=(10, 4))
-            sns.lineplot(data=df, x="Timestamp", y="Predicted_Yield")
             plt.xticks(rotation=45)
-            st.pyplot(plt.gcf())
+           st.pyplot(plt.gcf())
+plt.clf()
         with col2:
             corr = df[["Temperature", "Humidity", "Precipitation", "pH", "Fertilizer", "Predicted_Yield"]].corr()
             sns.heatmap(corr, annot=True, cmap="YlGnBu")
@@ -235,6 +237,10 @@ with tab2:
 with tab3:
     st.subheader("Upload CSV File")
     csv = st.file_uploader("Upload input CSV", type=["csv"])
+    for col in required_cols:
+    if not np.issubdtype(df_csv[col].dtype, np.number):
+        st.error(f"Column {col} must be numeric.")
+        st.stop()
     if csv:
         df_csv = pd.read_csv(csv)
         required_cols = ["Temperature", "Humidity", "Precipitation", "pH", "Fertilizer"]
