@@ -17,7 +17,6 @@ from streamlit_folium import st_folium
 
 st.set_page_config(page_title="Smart Yield Predictor", layout="wide")
 
-
 # =========================================
 #         AUTHENTICATION SYSTEM
 # =========================================
@@ -75,14 +74,6 @@ with st.sidebar:
 
     st.image("https://images.unsplash.com/photo-1501004318641-b39e6451bec6", use_column_width=True)
     st.title("🌿 Smart Yield App")
-    dark_mode = st.toggle("💡 Dark Mode")
-    if dark_mode:
-        st.markdown("""
-            <style>
-            body, .stApp { background-color: #1e1e1e; color: #f0f0f0; }
-            .stNumberInput > div > input, .stSlider > div { background-color: #333; color: white; }
-            </style>
-        """, unsafe_allow_html=True)
 
 # =========================================
 #           ADMIN PAGE
@@ -90,36 +81,33 @@ with st.sidebar:
 def is_admin():
     return st.session_state.role == 'admin'
 
-# --- Admin Panel
 with st.sidebar:
     if st.session_state.authenticated and is_admin():
-        admin_tab = st.selectbox("Admin Panel", ["Manage Users", "View Activity"])
+        admin_tab = st.selectbox("Admin Panel", ["Manage Users"])
         if admin_tab == "Manage Users":
             st.subheader("User Management")
-            
-            # Display all users
+
             users = load_users()
             user_list = list(users.keys())
-            
+
             if user_list:
                 st.write("### Registered Users")
                 for user in user_list:
                     st.write(f"**{user}** - Role: {users[user]['role']}")
-                    if st.button(f"Delete {user}"):
+                    if st.button(f"Delete {user}", key=f"delete_user_{user}"):
                         del users[user]
                         with open("users.json", "w") as f:
                             json.dump(users, f)
                         st.success(f"User {user} has been deleted.")
-                        st.experimental_rerun()
+                        st.rerun()
 
-            # Add new user form
             st.write("### Add New User")
             with st.form("add_user_form"):
                 new_username = st.text_input("Username")
                 new_password = st.text_input("Password", type="password")
                 new_role = st.selectbox("Role", ["user", "admin"])
-                add_button = st.form_submit_button("Add User")
-            
+                add_button = st.form_submit_button("Add User", key="add_user_btn")
+
             if add_button:
                 if new_username in users:
                     st.error("User already exists.")
@@ -129,12 +117,8 @@ with st.sidebar:
                     with open("users.json", "w") as f:
                         json.dump(users, f)
                     st.success(f"User {new_username} has been added successfully.")
-                    st.experimental_rerun()
+                    st.rerun()
 
-        elif admin_tab == "View Activity":
-            st.subheader("User Activity History")
-            # Logic to display and manage activity logs goes here.
-            st.write("Feature not implemented yet.")
 # =========================================
 #         MODEL LOADING & SHAP
 # =========================================
@@ -149,7 +133,6 @@ if os.path.exists(model_path):
         shap_enabled = True
     except Exception as e:
         st.warning(f"SHAP could not be initialized: {e}")
-
 
 # =========================================
 #               FUNCTIONS
@@ -207,7 +190,6 @@ def show_visualizations():
             st.pyplot(plt.gcf())
     else:
         st.info("No prediction history found.")
-
 
 # =========================================
 #               MAIN UI
