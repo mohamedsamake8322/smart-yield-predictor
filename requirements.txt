@@ -1,10 +1,10 @@
-echo streamlit==1.35.0 > requirements.txt
-echo pandas >> requirements.txt
-echo numpy >> requirements.txt
-echo matplotlib >> requirements.txt
-echo seaborn >> requirements.txt
-echo joblib >> requirements.txt
-echo bcrypt >> requirements.txt
-echo shap >> requirements.txt
-echo folium >> requirements.txt
-echo streamlit-folium >> requirements.txt
+streamlit==1.35.0
+pandas
+numpy
+matplotlib
+seaborn
+joblib
+bcrypt
+shap
+folium
+streamlit-folium
