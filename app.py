@@ -225,7 +225,8 @@ with tab1:
 with tab2:
     st.subheader("📍 Select Field Location")
     m = folium.Map(location=[14.5, -14.5], zoom_start=6)
-    result = st_folium(m, height=350, width=700)
+    result = st_folium(m, key="test_map")
+    result = st_folium(m, height=350, width=700, key="field_map")
 
     if result and result.get("last_clicked"):
         latlon = result["last_clicked"]["lat"], result["last_clicked"]["lng"]
