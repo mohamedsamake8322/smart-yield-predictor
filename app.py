@@ -30,7 +30,6 @@ if not os.path.exists(USERS_FILE):
     default_users = {"admin": {"password": hashed, "role": "admin"}}
     with open(USERS_FILE, "w") as f:
         json.dump(default_users, f, indent=4)
-    print("✅ Default admin user created: username = 'admin', password = 'admin123'")
 
 # =========================================
 #           AUTHENTICATION SYSTEM
@@ -49,7 +48,6 @@ def authenticate(username, password):
             return users[username]["role"]
     return None
 
-# Session state init
 if "authenticated" not in st.session_state:
     st.session_state.update({"authenticated": False, "user": None, "role": None})
 
@@ -166,10 +164,6 @@ def save_prediction(inputs, prediction, location=None, source="manual"):
     except Exception as e:
         st.error(f"❌ Error saving prediction: {e}")
 
-def display_map():
-    m = folium.Map(location=[14.5, -14.5], zoom_start=5)
-    return st_folium(m, height=300, width=700)
-
 def show_visualizations():
     if os.path.exists(PREDICTION_FILE):
         df = pd.read_csv(PREDICTION_FILE)
@@ -198,7 +192,6 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🧬 Manual Input", "📍 Field Location", "📁 CSV Upload", "📊 Visualizations", "📥 History Export"
 ])
 
-# Tab 1: Manual Input
 with tab1:
     with st.form("manual_input"):
         c1, c2, c3 = st.columns(3)
@@ -214,27 +207,31 @@ with tab1:
 
     if submitted:
         prediction, features = predict_yield_model(temp, humidity, precipitation, ph, fertilizer)
+        st.session_state.inputs = [temp, humidity, precipitation, ph, fertilizer]
         st.metric("Estimated Yield", f"{prediction} q/ha")
-        save_prediction([temp, humidity, precipitation, ph, fertilizer], prediction)
+        save_prediction(st.session_state.inputs, prediction)
         if shap_enabled:
             with st.expander("🔍 SHAP Explanation"):
                 shap_values = explain_prediction(features)
                 st.set_option("deprecation.showPyplotGlobalUse", False)
                 st.pyplot(shap.plots.waterfall(shap_values[0]))
 
-# Tab 2: Location
 with tab2:
-    st.subheader("Select Field Location")
-    map_data = display_map()
-    if map_data.get("last_clicked"):
-        latlon = map_data["last_clicked"]["lat"], map_data["last_clicked"]["lng"]
-        st.success(f"Location selected: {latlon}")
-        if st.button("Predict with this location"):
-            prediction, features = predict_yield_model(temp, humidity, precipitation, ph, fertilizer)
-            st.metric("Estimated Yield", f"{prediction} q/ha")
-            save_prediction([temp, humidity, precipitation, ph, fertilizer], prediction, location=latlon)
+    st.subheader("📍 Select Field Location")
+    m = folium.Map(location=[14.5, -14.5], zoom_start=6)
+    result = st_folium(m, height=350, width=700)
 
-# Tab 3: CSV Upload
+    if result and result.get("last_clicked"):
+        latlon = result["last_clicked"]["lat"], result["last_clicked"]["lng"]
+        st.success(f"Location selected: {latlon}")
+        if "inputs" in st.session_state:
+            if st.button("Predict with this location"):
+                prediction, features = predict_yield_model(*st.session_state.inputs)
+                st.metric("Estimated Yield", f"{prediction} q/ha")
+                save_prediction(st.session_state.inputs, prediction, location=latlon)
+        else:
+            st.warning("⚠️ Please make a prediction first in the 'Manual Input' tab.")
+
 with tab3:
     st.subheader("Upload CSV File")
     csv = st.file_uploader("Upload input CSV", type=["csv"])
@@ -253,11 +250,9 @@ with tab3:
         else:
             st.error("CSV must contain required columns.")
 
-# Tab 4: Visualizations
 with tab4:
     show_visualizations()
 
-# Tab 5: Export History
 with tab5:
     if os.path.exists(PREDICTION_FILE):
         with open(PREDICTION_FILE, "rb") as f:
@@ -265,6 +260,5 @@ with tab5:
     else:
         st.info("No history available.")
 
-# Footer
 st.markdown("---")
 st.markdown("© 2025 AgriNest • Powered by Mohamed SAMAKE • AI Agriculture Suite")
