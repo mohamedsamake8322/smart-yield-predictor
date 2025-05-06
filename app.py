@@ -30,6 +30,7 @@ if not os.path.exists(USERS_FILE):
     default_users = {"admin": {"password": hashed, "role": "admin"}}
     with open(USERS_FILE, "w") as f:
         json.dump(default_users, f, indent=4)
+    print("✅ Default admin user created: username = 'admin', password = 'admin123'")
 
 # =========================================
 #           AUTHENTICATION SYSTEM
@@ -48,6 +49,7 @@ def authenticate(username, password):
             return users[username]["role"]
     return None
 
+# Session state init
 if "authenticated" not in st.session_state:
     st.session_state.update({"authenticated": False, "user": None, "role": None})
 
@@ -95,7 +97,7 @@ with st.sidebar:
             users = load_users()
             for user, info in users.items():
                 st.write(f"**{user}** - Role: {info['role']}")
-                if st.button(f"Delete {user}", key=f"del_{user}"):
+                if user != st.session_state.user and st.button(f"Delete {user}", key=f"del_{user}"):
                     del users[user]
                     with open(USERS_FILE, "w") as f:
                         json.dump(users, f)
@@ -167,15 +169,13 @@ def save_prediction(inputs, prediction, location=None, source="manual"):
 def show_visualizations():
     if os.path.exists(PREDICTION_FILE):
         df = pd.read_csv(PREDICTION_FILE)
-        df = df.sort_values("Timestamp")
-        df["Timestamp"] = pd.to_datetime(df["Timestamp"], errors='coerce')
         st.markdown(f"**Average Yield:** {df['Predicted_Yield'].mean():.2f} | Max: {df['Predicted_Yield'].max():.2f} | Min: {df['Predicted_Yield'].min():.2f}")
         col1, col2 = st.columns(2)
         with col1:
             plt.figure(figsize=(10, 4))
+            sns.lineplot(data=df, x="Timestamp", y="Predicted_Yield")
             plt.xticks(rotation=45)
-           st.pyplot(plt.gcf())
-plt.clf()
+            st.pyplot(plt.gcf())
         with col2:
             corr = df[["Temperature", "Humidity", "Precipitation", "pH", "Fertilizer", "Predicted_Yield"]].corr()
             sns.heatmap(corr, annot=True, cmap="YlGnBu")
@@ -194,6 +194,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🧬 Manual Input", "📍 Field Location", "📁 CSV Upload", "📊 Visualizations", "📥 History Export"
 ])
 
+# Tab 1: Manual Input
 with tab1:
     with st.form("manual_input"):
         c1, c2, c3 = st.columns(3)
@@ -208,8 +209,8 @@ with tab1:
         submitted = st.form_submit_button("Predict")
 
     if submitted:
-        prediction, features = predict_yield_model(temp, humidity, precipitation, ph, fertilizer)
         st.session_state.inputs = [temp, humidity, precipitation, ph, fertilizer]
+        prediction, features = predict_yield_model(*st.session_state.inputs)
         st.metric("Estimated Yield", f"{prediction} q/ha")
         save_prediction(st.session_state.inputs, prediction)
         if shap_enabled:
@@ -217,7 +218,10 @@ with tab1:
                 shap_values = explain_prediction(features)
                 st.set_option("deprecation.showPyplotGlobalUse", False)
                 st.pyplot(shap.plots.waterfall(shap_values[0]))
+        else:
+            st.info("🔎 SHAP explanations not available.")
 
+# Tab 2: Location
 with tab2:
     st.subheader("📍 Select Field Location")
     m = folium.Map(location=[14.5, -14.5], zoom_start=6)
@@ -234,13 +238,10 @@ with tab2:
         else:
             st.warning("⚠️ Please make a prediction first in the 'Manual Input' tab.")
 
+# Tab 3: CSV Upload
 with tab3:
     st.subheader("Upload CSV File")
     csv = st.file_uploader("Upload input CSV", type=["csv"])
-    for col in required_cols:
-    if not np.issubdtype(df_csv[col].dtype, np.number):
-        st.error(f"Column {col} must be numeric.")
-        st.stop()
     if csv:
         df_csv = pd.read_csv(csv)
         required_cols = ["Temperature", "Humidity", "Precipitation", "pH", "Fertilizer"]
@@ -256,9 +257,11 @@ with tab3:
         else:
             st.error("CSV must contain required columns.")
 
+# Tab 4: Visualizations
 with tab4:
     show_visualizations()
 
+# Tab 5: Export History
 with tab5:
     if os.path.exists(PREDICTION_FILE):
         with open(PREDICTION_FILE, "rb") as f:
@@ -266,5 +269,6 @@ with tab5:
     else:
         st.info("No history available.")
 
+# Footer
 st.markdown("---")
 st.markdown("© 2025 AgriNest • Powered by Mohamed SAMAKE • AI Agriculture Suite")
