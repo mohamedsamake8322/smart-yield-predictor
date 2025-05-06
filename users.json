@@ -1,0 +1,10 @@
+{
+    "mohamedsamake2000": {
+        "password": "$2b$12$MJ2q445a.aAQZJtxPujZmesJuYO.Ada06gIORmO.jIJwNXt23waFm",
+        "role": "admin"
+    },
+    "newuser": {
+        "password": "$2b$12$ExampleHashedPasswordHere...",
+        "role": "user"
+    }
+}

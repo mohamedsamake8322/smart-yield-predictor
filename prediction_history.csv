@@ -1,0 +1,2 @@
+Timestamp,Source,Temperature,Humidity,Precipitation,pH,Fertilizer,Latitude,Longitude,Predicted_Yield
+2025-05-06 00:48:07,manual,25.0,50.0,100.0,6.5,100.0,,,52.0
