@@ -76,12 +76,15 @@ if not st.session_state.authenticated:
 # =========================================
 with st.sidebar:
     if st.session_state.authenticated:
-        if st.button("🔚 Logout"):
+        if st.button("🚪 Logout"):
             st.session_state.update({"authenticated": False, "user": None, "role": None})
             st.success("Logged out successfully.")
             st.rerun()
-   st.image("https://images.unsplash.com/photo-1501004318641-b39e6451bec6", use_container_width=True)
-    st.title("🌿 Smart Yield App")
+
+        # Image and title
+        st.image("https://images.unsplash.com/photo-1501004318641-b39e6451bec6", use_container_width=True)
+        st.title("🌾 Smart Yield App")
+
 
 # =========================================
 #           ADMIN PAGE
