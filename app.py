@@ -228,18 +228,19 @@ with tab2:
     result = st_folium(m, height=350, width=700, key="field_map")
 
     if result and result.get("last_clicked"):
-        latlon = result["last_clicked"]["lat"], result["last_clicked"]["lng"]
+        latlon = (result["last_clicked"]["lat"], result["last_clicked"]["lng"])
+        st.session_state["selected_location"] = latlon
         st.success(f"Location selected: {latlon}")
-        try:
-            if "inputs" in st.session_state:
-                if st.button("Predict with this location"):
-                    prediction, features = predict_yield_model(*st.session_state.inputs)
-                    st.metric("Estimated Yield", f"{prediction} q/ha")
-                    save_prediction(st.session_state.inputs, prediction, location=latlon)
-            else:
-                st.warning("⚠️ Please make a prediction first in the 'Manual Input' tab.")
-        except Exception as e:
-            st.error(f"❌ Error rendering map: {e}")
+
+    if "selected_location" in st.session_state:
+        if "inputs" in st.session_state:
+            if st.button("Predict with this location"):
+                prediction, features = predict_yield_model(*st.session_state.inputs)
+                st.metric("Estimated Yield", f"{prediction} q/ha")
+                save_prediction(st.session_state.inputs, prediction, location=st.session_state["selected_location"])
+        else:
+            st.warning("⚠️ Please make a prediction first in the 'Manual Input' tab.")
+
 
 # Tab 3: CSV Upload
 with tab3:
