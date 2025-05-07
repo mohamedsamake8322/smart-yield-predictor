@@ -1,5 +1,5 @@
 # =========================================
-#                  IMPORTS
+#              IMPORTS
 # =========================================
 import os
 import json
@@ -16,17 +16,14 @@ from datetime import datetime
 from streamlit_folium import st_folium
 
 # =========================================
-#           GLOBAL VARIABLES & CONFIG
+#         INITIAL SETUP & AUTH FILE
 # =========================================
 st.set_page_config(page_title="Smart Yield Predictor", layout="wide")
+
 USERS_FILE = "users.json"
 MODEL_FILE = "yield_model.pkl"
 PREDICTION_FILE = "prediction_history.csv"
-REQUIRED_COLUMNS = ["Temperature", "Humidity", "Precipitation", "pH", "Fertilizer"]
 
-# =========================================
-#            USER INITIALIZATION
-# =========================================
 if not os.path.exists(USERS_FILE):
     default_password = os.environ.get("DEFAULT_ADMIN_PASSWORD", "admin123")
     hashed = bcrypt.hashpw(default_password.encode(), bcrypt.gensalt()).decode()
@@ -36,7 +33,7 @@ if not os.path.exists(USERS_FILE):
     print("✅ Default admin user created: username = 'admin', password = 'admin123'")
 
 # =========================================
-#         AUTHENTICATION SYSTEM
+#           AUTHENTICATION SYSTEM
 # =========================================
 def load_users():
     if os.path.exists(USERS_FILE):
@@ -74,7 +71,7 @@ if not st.session_state.authenticated:
     st.stop()
 
 # =========================================
-#               SIDEBAR
+#           SIDEBAR & LOGOUT
 # =========================================
 with st.sidebar:
     if st.session_state.authenticated:
@@ -82,11 +79,12 @@ with st.sidebar:
             st.session_state.update({"authenticated": False, "user": None, "role": None})
             st.success("Logged out successfully.")
             st.rerun()
+
         st.image("https://images.unsplash.com/photo-1501004318641-b39e6451bec6", use_container_width=True)
         st.title("🌾 Smart Yield App")
 
 # =========================================
-#           ADMIN PANEL
+#           ADMIN PAGE
 # =========================================
 def is_admin():
     return st.session_state.role == 'admin'
@@ -170,9 +168,6 @@ def save_prediction(inputs, prediction, location=None, source="manual"):
     except Exception as e:
         st.error(f"❌ Error saving prediction: {e}")
 
-def validate_columns(df):
-    return [col for col in REQUIRED_COLUMNS if col not in df.columns]
-
 def show_visualizations():
     if os.path.exists(PREDICTION_FILE):
         df = pd.read_csv(PREDICTION_FILE)
@@ -184,14 +179,14 @@ def show_visualizations():
             plt.xticks(rotation=45)
             st.pyplot(plt.gcf())
         with col2:
-            corr = df[REQUIRED_COLUMNS + ["Predicted_Yield"]].corr()
+            corr = df[["Temperature", "Humidity", "Precipitation", "pH", "Fertilizer", "Predicted_Yield"]].corr()
             sns.heatmap(corr, annot=True, cmap="YlGnBu")
             st.pyplot(plt.gcf())
     else:
         st.info("No prediction history found.")
 
 # =========================================
-#                MAIN UI
+#               MAIN UI
 # =========================================
 st.title("🌾 Smart Agricultural Yield Prediction")
 st.markdown("Predict yield based on environmental and soil data with parcel location.")
@@ -201,7 +196,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🧬 Manual Input", "📍 Field Location", "📁 CSV Upload", "📊 Visualizations", "📥 History Export"
 ])
 
-# -------- Tab 1: Manual Input --------
+# Tab 1: Manual Input
 with tab1:
     with st.form("manual_input"):
         c1, c2, c3 = st.columns(3)
@@ -228,7 +223,7 @@ with tab1:
         else:
             st.info("🔎 SHAP explanations not available.")
 
-# -------- Tab 2: Field Location --------
+# Tab 2: Location
 with tab2:
     st.subheader("📍 Select Field Location")
     m = folium.Map(location=[14.5, -14.5], zoom_start=6)
@@ -248,30 +243,29 @@ with tab2:
         else:
             st.warning("⚠️ Please make a prediction first in the 'Manual Input' tab.")
 
-# -------- Tab 3: CSV Upload --------
+# Tab 3: CSV Upload
 with tab3:
     st.subheader("Upload CSV File")
-    file = st.file_uploader("Upload input CSV or Excel", type=["csv", "xlsx"])
-    if file:
-        try:
-            df = pd.read_csv(file) if file.name.endswith(".csv") else pd.read_excel(file)
-            missing_columns = validate_columns(df)
-            if missing_columns:
-                st.error(f"Missing required columns: {', '.join(missing_columns)}")
-            else:
-                df["Predicted_Yield"] = model.predict(df[REQUIRED_COLUMNS])
-                st.dataframe(df)
-                if st.button("Save All"):
-                    df.to_csv(PREDICTION_FILE, mode='a', header=not os.path.exists(PREDICTION_FILE), index=False)
-                    st.success("Predictions added to CSV!")
-        except Exception as e:
-            st.error(f"Error processing file: {e}")
+    csv = st.file_uploader("Upload input CSV", type=["csv"])
+    if csv:
+        df_csv = pd.read_csv(csv)
+        required_cols = ["Temperature", "Humidity", "Precipitation", "pH", "Fertilizer"]
+        if all(col in df_csv.columns for col in required_cols):
+            try:
+                df_csv["Predicted_Yield"] = model.predict(df_csv[required_cols])
+                st.dataframe(df_csv)
+                df_csv.to_csv("predictions_output.csv", index=False)
+                st.success("Predictions added to CSV!")
+            except Exception as e:
+                st.error(f"Error predicting: {e}")
+        else:
+            st.error("CSV missing required columns.")
 
-# -------- Tab 4: Visualizations --------
+# Tab 4: Visualizations
 with tab4:
     show_visualizations()
 
-# -------- Tab 5: Export --------
+# Tab 5: Export
 with tab5:
     st.subheader("Export Prediction History")
     if os.path.exists(PREDICTION_FILE):
@@ -280,8 +274,6 @@ with tab5:
     else:
         st.info("No prediction history available.")
 
-# =========================================
-#                 FOOTER
-# =========================================
+# Footer
 st.markdown("---")
-st.markdown("© 2025 AgriNest • Powered by Mohamed SAMAKE • AI Agriculture Suite")
+st.markdown("© 2025 AgriNest • Powered by Mohamed SAMAKE • AI Agriculture")
