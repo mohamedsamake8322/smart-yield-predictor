@@ -1,9 +1,10 @@
-streamlit==1.25.0
-streamlit-folium==0.6.0
+streamlit
+bcrypt
 pandas
 numpy
-scikit-learn
+joblib
 shap
 matplotlib
+seaborn
 folium
-geopandas
+streamlit-folium
