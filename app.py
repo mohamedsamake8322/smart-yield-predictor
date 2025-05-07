@@ -7,9 +7,6 @@ import bcrypt
 import joblib
 import shap
 import folium
-import logging
-import smtplib
-import sqlite3
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -18,6 +15,8 @@ import streamlit as st
 from datetime import datetime
 from email.message import EmailMessage
 from streamlit_folium import st_folium
+import logging
+import sqlite3
 
 # =========================================
 #         INITIAL SETUP & CONFIG
@@ -84,6 +83,7 @@ def authenticate(username, password):
 if "authenticated" not in st.session_state:
     st.session_state.update({"authenticated": False, "user": None, "role": None})
 
+# Login handling
 if not st.session_state.authenticated:
     st.image("https://cdn-icons-png.flaticon.com/512/3064/3064197.png", width=100)
     st.subheader("🔐 Please log in to access the app")
@@ -111,6 +111,7 @@ with st.sidebar:
             st.session_state.update({"authenticated": False, "user": None, "role": None})
             st.success("Logged out successfully.")
             st.rerun()
+
         st.image("https://images.unsplash.com/photo-1501004318641-b39e6451bec6", use_container_width=True)
         st.title("🌾 Smart Yield App")
         if st.session_state.role == 'admin':
