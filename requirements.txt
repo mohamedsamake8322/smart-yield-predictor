@@ -1,5 +1,5 @@
 streamlit==1.25.0
-streamlit-folium==0.11.2
+streamlit-folium==0.6.0
 pandas
 numpy
 scikit-learn
@@ -7,4 +7,3 @@ shap
 matplotlib
 folium
 geopandas
-
