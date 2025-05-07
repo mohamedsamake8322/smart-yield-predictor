@@ -80,7 +80,7 @@ with st.sidebar:
             st.session_state.update({"authenticated": False, "user": None, "role": None})
             st.success("Logged out successfully.")
             st.rerun()
-    st.image("https://images.unsplash.com/photo-1501004318641-b39e6451bec6", use_column_width=True)
+   st.image("https://images.unsplash.com/photo-1501004318641-b39e6451bec6", use_container_width=True)
     st.title("🌿 Smart Yield App")
 
 # =========================================
