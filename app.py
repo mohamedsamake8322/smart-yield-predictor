@@ -38,12 +38,12 @@ MODEL_FILE = "yield_model.pkl"
 PREDICTION_FILE = "prediction_history.csv"
 
 if not os.path.exists(USERS_FILE):
-    default_password = os.environ.get("DEFAULT_ADMIN_PASSWORD", "admin123")
+    default_password = os.environ.get("DEFAULT_ADMIN_PASSWORD", "78772652Moh#")
     hashed = bcrypt.hashpw(default_password.encode(), bcrypt.gensalt()).decode()
     default_users = {"admin": {"password": hashed, "role": "admin"}}
     with open(USERS_FILE, "w") as f:
         json.dump(default_users, f, indent=4)
-    print("✅ Default admin user created: username = 'admin', password = 'admin123'")
+    print("✅ Default admin user created: username = 'mohamedsamake2000', password = '78772652Moh#'")
 
 # =========================================
 #           AUTHENTICATION SYSTEM
