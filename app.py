@@ -175,7 +175,13 @@ def save_prediction(inputs, prediction, location=None, source="manual"):
         df.to_csv(PREDICTION_FILE, mode='a', header=not os.path.exists(PREDICTION_FILE), index=False)
     except Exception as e:
         st.error(f"❌ Error saving prediction: {e}")
+st.title("🌾 Smart Agricultural Yield Prediction")
+st.markdown("Predict yield based on environmental and soil data with parcel location.")
+st.divider()
 
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "🧬 Manual Input", "📍 Field Location", "📁 CSV Upload", "📊 Visualizations", "📥 History Export"
+])
 def show_visualizations():
     if os.path.exists(PREDICTION_FILE):
         df = pd.read_csv(PREDICTION_FILE)
