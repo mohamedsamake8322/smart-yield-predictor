@@ -25,6 +25,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import streamlit as st
+import datetime
 from datetime import datetime
 from streamlit_folium import st_folium
 
@@ -134,6 +135,59 @@ with st.sidebar:
                         json.dump(users, f)
                     st.success(f"User {new_username} added.")
                     st.rerun()
+HISTORY_FILE = "detection_history.csv"
+
+def log_detection(filename, prediction, confidence=None, user=None):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    entry = {
+        "timestamp": timestamp,
+        "filename": filename,
+        "prediction": prediction,
+        "confidence": confidence if confidence else "N/A",
+        "user": user if user else "anonymous"
+    }
+
+    if os.path.exists(HISTORY_FILE):
+        df = pd.read_csv(HISTORY_FILE)
+        df = pd.concat([df, pd.DataFrame([entry])], ignore_index=True)
+    else:
+        df = pd.DataFrame([entry])
+
+    df.to_csv(HISTORY_FILE, index=False)
+ elif menu == "History":
+    st.subheader("Detection History")
+
+    if os.path.exists(HISTORY_FILE):
+        df = pd.read_csv(HISTORY_FILE)
+
+        # Filters
+        col1, col2 = st.columns(2)
+
+        with col1:
+            disease_filter = st.selectbox("Filter by prediction", options=["All"] + sorted(df["prediction"].unique().tolist()))
+
+        with col2:
+            date_filter = st.date_input("Filter by date", value=None)
+
+        # Apply filters
+        filtered_df = df.copy()
+
+        if disease_filter != "All":
+            filtered_df = filtered_df[filtered_df["prediction"] == disease_filter]
+
+        if date_filter:
+            filtered_df["timestamp"] = pd.to_datetime(filtered_df["timestamp"])
+            filtered_df = filtered_df[filtered_df["timestamp"].dt.date == date_filter]
+
+        st.markdown("### Filtered Results")
+        st.dataframe(filtered_df.sort_values(by="timestamp", ascending=False), use_container_width=True)
+
+        # Export option
+        csv = filtered_df.to_csv(index=False).encode("utf-8")
+        st.download_button("Download Filtered History", data=csv, file_name="filtered_detection_history.csv", mime="text/csv")
+
+    else:
+        st.info("No detection history found yet.")
 
 # =========================================
 #         MODEL LOADING & SHAP
@@ -235,7 +289,107 @@ with tab1:
                 st.pyplot(shap.plots.waterfall(shap_values[0]))
         else:
             st.info("🔎 SHAP explanations not available.")
+# Load the model (this will be done once the model is available)
+def load_cnn_model():
+    model_path = "path_to_your_saved_model"  # Replace with your model path
+    model = load_model(model_path)
+    return model
 
+# Function to make the prediction
+def predict_disease(img_path, model):
+    img = image.load_img(img_path, target_size=(224, 224))  # Adjust the size to your model's input size
+    img_array = image.img_to_array(img) / 255.0  # Normalize the image
+    img_array = np.expand_dims(img_array, axis=0)  # Add a batch dimension
+    prediction = model.predict(img_array)
+    return prediction
+
+# Display the image and the prediction
+def display_results(image_path, prediction):
+    st.image(image_path, caption='Uploaded Image', use_column_width=True)
+    st.write(f"Prediction: {prediction}")
+st.set_page_config(page_title="Plant Disease Detector", layout="wide")
+
+st.title("🌿 Plant Disease Detection")
+st.markdown("Upload a leaf image to detect possible diseases using a deep learning model.")
+
+# File uploader section
+uploaded_file = st.file_uploader("Upload a leaf image", type=["jpg", "jpeg", "png"])
+
+if uploaded_file:
+    st.image(uploaded_file, caption="Uploaded Leaf", use_column_width=True)
+    st.info("Analyzing image... (model loading or training in background)")
+    # Placeholder for prediction (to be replaced by model prediction once trained)
+    st.success("Predicted class: Tomato - Late Blight")  # Example output
+
+    # Save detection to history (CSV example)
+    history_path = "detection_history.csv"
+    new_entry = {
+        "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "predicted_disease": "Tomato - Late Blight",
+        "image_name": uploaded_file.name
+    }
+    if os.path.exists(history_path):
+        df = pd.read_csv(history_path)
+        df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
+    else:
+        df = pd.DataFrame([new_entry])
+    df.to_csv(history_path, index=False)
+
+    st.info("Detection saved to history.")
+
+# Section for predefined disease info
+st.subheader("📚 Disease Information")
+disease_info = {
+    "Tomato - Late Blight": {
+        "Symptoms": "Dark, water-soaked spots on leaves and stems. White fungal growth under leaves.",
+        "Cause": "Caused by the oomycete Phytophthora infestans.",
+        "Treatment": "Apply fungicides early. Remove and destroy infected plants. Avoid overhead watering."
+    },
+    "Corn - Leaf Spot": {
+        "Symptoms": "Small, circular lesions with tan centers and dark borders.",
+        "Cause": "Caused by fungal pathogens like Bipolaris spp.",
+        "Treatment": "Use resistant varieties. Practice crop rotation. Apply fungicides if necessary."
+    }
+}
+
+selected_disease = st.selectbox("Select a disease to learn more:", list(disease_info.keys()))
+
+if selected_disease:
+    st.write(f"**Symptoms:** {disease_info[selected_disease]['Symptoms']}")
+    st.write(f"**Cause:** {disease_info[selected_disease]['Cause']}")
+    st.write(f"**Treatment:** {disease_info[selected_disease]['Treatment']}")
+
+# Optional: Display history
+if st.checkbox("Show detection history"):
+    if os.path.exists("detection_history.csv"):
+        history_df = pd.read_csv("detection_history.csv")
+        st.dataframe(history_df)
+    else:
+        st.info("No detection history available yet.")
+# Streamlit user interface
+st.title("Plant Disease Detection")
+
+# Load the model
+if 'model' not in st.session_state:
+    st.session_state['model'] = load_cnn_model()  # Load the model if not already loaded
+
+# Form to upload an image
+uploaded_file = st.file_uploader("Upload a plant leaf image", type=["jpg", "png", "jpeg"])
+
+if uploaded_file is not None:
+    # Save the uploaded image temporarily
+    with open("temp_image.jpg", "wb") as f:
+        f.write(uploaded_file.getbuffer())
+    
+    # Make the prediction
+    prediction = predict_disease("temp_image.jpg", st.session_state['model'])
+    
+    # Decode the prediction
+    class_names = ["Tomato_Early_blight", "Tomato_Late_blight", "Tomato_Healthy", "Maize_Common_rust", ...]  # List of diseases
+    predicted_class = class_names[np.argmax(prediction)]  # Find the class with the highest probability
+
+    # Display the results
+    display_results("temp_image.jpg", predicted_class)
 # Tab 2: Location
 with tab2:
     st.subheader("📍 Select Field Location")
