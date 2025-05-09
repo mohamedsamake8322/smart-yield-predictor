@@ -149,10 +149,10 @@ def log_detection(filename, prediction, confidence=None, user=None):
    if menu == "Disease Detection":
     # ici ton code de détection
     if os.path.exists(HISTORY_FILE): 
-    df = pd.read_csv(HISTORY_FILE)
-    df = pd.concat([df, pd.DataFrame([entry])], ignore_index=True)
+        df = pd.read_csv(HISTORY_FILE)
+        df = pd.concat([df, pd.DataFrame([entry])], ignore_index=True)
     else:
-    df = pd.DataFrame([entry])
+        df = pd.DataFrame([entry])
 
     # Cette ligne doit être hors du bloc if/else
     df.to_csv(HISTORY_FILE, index=False)
