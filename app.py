@@ -147,15 +147,15 @@ def log_detection(filename, prediction, confidence=None, user=None):
         "user": user if user else "anonymous"
     }
 
-    if os.path.exists(HISTORY_FILE):
-        df = pd.read_csv(HISTORY_FILE)
-        df = pd.concat([df, pd.DataFrame([entry])], ignore_index=True)
-    else:
-        df = pd.DataFrame([entry])
+   if os.path.exists(HISTORY_FILE): 
+    df = pd.read_csv(HISTORY_FILE)
+    df = pd.concat([df, pd.DataFrame([entry])], ignore_index=True)
+else:
+    df = pd.DataFrame([entry])
+df.to_csv(HISTORY_FILE, index=False)
 
-        df.to_csv(HISTORY_FILE, index=False)
-    elif menu == "History":
-         st.subheader("Detection History")
+elif menu == "History":  # ❌ ERREUR : mal indenté et mal placé
+    st.subheader("Detection History")
 
     if os.path.exists(HISTORY_FILE):
         df = pd.read_csv(HISTORY_FILE)
