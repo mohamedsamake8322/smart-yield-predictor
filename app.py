@@ -146,15 +146,19 @@ def log_detection(filename, prediction, confidence=None, user=None):
         "confidence": confidence if confidence else "N/A",
         "user": user if user else "anonymous"
     }
-
-   if os.path.exists(HISTORY_FILE): 
+   if menu == "Disease Detection":
+    # ici ton code de détection
+    if os.path.exists(HISTORY_FILE): 
     df = pd.read_csv(HISTORY_FILE)
     df = pd.concat([df, pd.DataFrame([entry])], ignore_index=True)
-else:
+    else:
     df = pd.DataFrame([entry])
-df.to_csv(HISTORY_FILE, index=False)
 
-elif menu == "History":  # ❌ ERREUR : mal indenté et mal placé
+    # Cette ligne doit être hors du bloc if/else
+    df.to_csv(HISTORY_FILE, index=False)
+
+
+    elif menu == "History":
     st.subheader("Detection History")
 
     if os.path.exists(HISTORY_FILE):
