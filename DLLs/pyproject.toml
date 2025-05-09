@@ -1,0 +1,11 @@
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+
+[tool.flake8]
+max-line-length = 88
+ignore = E203, W503

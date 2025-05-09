@@ -136,7 +136,6 @@ with st.sidebar:
                     st.success(f"User {new_username} added.")
                     st.rerun()
 HISTORY_FILE = "detection_history.csv"
-
 def log_detection(filename, prediction, confidence=None, user=None):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     entry = {
@@ -146,13 +145,20 @@ def log_detection(filename, prediction, confidence=None, user=None):
         "confidence": confidence if confidence else "N/A",
         "user": user if user else "anonymous"
     }
-   if menu == "Disease Detection":
-    # ici ton code de détection
-    if os.path.exists(HISTORY_FILE): 
+
+    if os.path.exists(HISTORY_FILE):
         df = pd.read_csv(HISTORY_FILE)
         df = pd.concat([df, pd.DataFrame([entry])], ignore_index=True)
     else:
         df = pd.DataFrame([entry])
+
+    df.to_csv(HISTORY_FILE, index=False)
+
+# Example usage — place this in the appropriate part of your main app logic
+if menu == "Disease Detection":
+    # Your detection logic here
+    pass  # Replace with actual detection code
+
 
     # Cette ligne doit être hors du bloc if/else
     df.to_csv(HISTORY_FILE, index=False)
