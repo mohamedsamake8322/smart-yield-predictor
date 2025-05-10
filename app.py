@@ -1,21 +1,6 @@
-# =========================================
-#         STRUCTURE & INIT FOLDERS
-# =========================================
-import os
-
-DATA_DIR = "data"
-MODEL_FILE = os.path.join(DATA_DIR, "yield_model.pkl")
-PREDICTION_FILE = os.path.join(DATA_DIR, "prediction_history.csv")
-USERS_FILE = os.path.join(DATA_DIR, "users.json")
-
-os.makedirs(DATA_DIR, exist_ok=True)
-
 import datetime
-
-# =========================================
-#              IMPORTS
-# =========================================
 import json
+import os
 from datetime import datetime
 
 import bcrypt
@@ -27,7 +12,17 @@ import pandas as pd
 import seaborn as sns
 import shap
 import streamlit as st
+from PIL import UnidentifiedImageError
 from streamlit_folium import st_folium
+
+DATA_DIR = "data"
+MODEL_FILE = os.path.join(DATA_DIR, "yield_model.pkl")
+PREDICTION_FILE = os.path.join(DATA_DIR, "prediction_history.csv")
+USERS_FILE = os.path.join(DATA_DIR, "users.json")
+
+os.makedirs(DATA_DIR, exist_ok=True)
+
+
 
 # =========================================
 #         INITIAL SETUP & AUTH FILE
@@ -448,12 +443,18 @@ uploaded_file = st.file_uploader("Upload a leaf image", type=["jpg", "jpeg", "pn
 
 if uploaded_file:
     try:
-        image = Image.open(uploaded_file)
+
+        image = "Image".open(uploaded_file)
+
         st.image(image, caption="Uploaded Leaf", use_column_width=True)
+
+    except Exception as e:
+        # Si une erreur survient, l'afficher
+        st.error(f"❌ Error loading the image: {e}")
+
         st.info("Analyzing image... (model loading or training in background)")
     except Exception as e:
         st.error(f"❌ Error loading the image: {e}")
-
 
     # Prediction
     prediction = predict_disease(uploaded_file, model)
@@ -571,7 +572,6 @@ if uploaded_file is not None:
             f.write(uploaded_file.getbuffer())
     except Exception as e:
         st.error(f"❌ Error saving the image: {e}")
-
 
     # Save the uploaded image temporarily
     with open(unique_filename, "wb") as f:
@@ -716,14 +716,12 @@ with tab1:
     )
     if uploaded_file is not None:
         try:
-        # Sauvegarde temporaire de l'image téléchargée
+            # Sauvegarde temporaire de l'image téléchargée
             unique_filename = f"temp_image_{uuid.uuid4().hex}.jpg"
             with open(unique_filename, "wb") as f:
                 f.write(uploaded_file.getbuffer())
         except Exception as e:
             st.error(f"❌ Error saving the image: {e}")
-
-
 
         # Make the prediction
         prediction = predict_disease(unique_filename, st.session_state["model"])
@@ -970,16 +968,19 @@ if uploaded_file and cnn_model:
         image = Image.open(uploaded_file).convert("RGB")
 
         st.image(image, caption="Uploaded Leaf Image", use_column_width=True)
-        img = image.resize((224, 224))  # S'assurer que 
-        img_array = np.expand_dims(np.array(img) / 255.0, axis=0) 
+        img = image.resize((224, 224))  # S'assurer que
+        img_array = np.expand_dims(np.array(img) / 255.0, axis=0)
         prediction = cnn_model.predict(img_array)[0]
         classes = ["Healthy", "Disease A", "Disease B", "Disease C"]
         predicted_class = classes[np.argmax(prediction)]
         confidence = np.max(prediction) * 100
         st.success(f"🧬 Prediction: **{predicted_class}** ({confidence:.2f}%)")
 
-    except Unidentified ImageError:
-        st.error("❌ The uploaded file is not a valid image. Please upload a JPG or PNG file.")
+    except UnidentifiedImageError:
+        st.error(
+            "❌ The uploaded file is not a valid image. Please upload a JPG or PNG file."
+        )
+
     except Exception as e:
         st.error(f"❌ Unexpected error while processing the image: {e}")
 
