@@ -593,8 +593,17 @@ if uploaded_file is not None:
     predicted_class = np.argmax(prediction, axis=-1)  # Assuming the model gives probabilities
     st.write(f"Prediction: {predicted_class}")
 
-except Exception as e:
-    st.error(f"❌ Error saving the image: {e}")
+import uuid
+import streamlit as st
+
+if uploaded_file is not None:
+    try:
+        # Sauvegarde temporaire de l'image téléchargée
+        unique_filename = f"temp_image_{uuid.uuid4().hex}.jpg"
+        with open(unique_filename, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+    except Exception as e:
+        st.error(f"❌ Error saving the image: {e}")
 # You may want to map this to actual labels
 
     # Optional: Display the uploaded image
