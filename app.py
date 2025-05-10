@@ -714,15 +714,15 @@ with tab1:
     uploaded_file = st.file_uploader(
         "Upload a plant leaf image", type=["jpg", "png", "jpeg"]
     )
-
     if uploaded_file is not None:
-    try:
+        try:
         # Sauvegarde temporaire de l'image téléchargée
-        unique_filename = f"temp_image_{uuid.uuid4().hex}.jpg"
-        with open(unique_filename, "wb") as f:
-            f.write(uploaded_file.getbuffer())
-    except Exception as e:
-        st.error(f"❌ Error saving the image: {e}")
+            unique_filename = f"temp_image_{uuid.uuid4().hex}.jpg"
+            with open(unique_filename, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+        except Exception as e:
+            st.error(f"❌ Error saving the image: {e}")
+
 
 
         # Make the prediction
@@ -939,9 +939,7 @@ elif stress_level < 80:
     color = "red"
 else:
     color = "darkred"
-# =========================================
-#       LEAF DISEASE DETECTION (CNN)
-# =========================================
+
 import os
 
 import numpy as np
@@ -950,8 +948,6 @@ import tensorflow as tf
 from PIL import Image
 
 st.header("🧪 Leaf Disease Detection")
-
-# Dossier contenant le modèle (à adapter selon l'organisation de ton projet)
 DATA_DIR = "data"
 CNN_MODEL_PATH = os.path.join(DATA_DIR, "leaf_disease_model.h5")
 
@@ -971,36 +967,24 @@ uploaded_file = st.file_uploader("Choose an image", type=["jpg", "png", "jpeg"])
 
 if uploaded_file and cnn_model:
     try:
-        # Essayer d'ouvrir l'image et la convertir en RGB
         image = Image.open(uploaded_file).convert("RGB")
-        
-        # Affichage de l'image téléchargée
+
         st.image(image, caption="Uploaded Leaf Image", use_column_width=True)
-
-        # Prétraitement pour le modèle (adapté selon ton modèle)
-        img = image.resize((224, 224))  # S'assurer que la taille corresponde à celle attendue par ton modèle
-        img_array = np.expand_dims(np.array(img) / 255.0, axis=0)  # Normalisation de l'image
-
-        # Prédiction avec le modèle
+        img = image.resize((224, 224))  # S'assurer que 
+        img_array = np.expand_dims(np.array(img) / 255.0, axis=0) 
         prediction = cnn_model.predict(img_array)[0]
-        classes = ["Healthy", "Disease A", "Disease B", "Disease C"]  # Remplace avec tes classes
+        classes = ["Healthy", "Disease A", "Disease B", "Disease C"]
         predicted_class = classes[np.argmax(prediction)]
         confidence = np.max(prediction) * 100
-
-        # Affichage du résultat de la prédiction
         st.success(f"🧬 Prediction: **{predicted_class}** ({confidence:.2f}%)")
 
-    except UnidentifiedImageError:
+    except Unidentified ImageError:
         st.error("❌ The uploaded file is not a valid image. Please upload a JPG or PNG file.")
     except Exception as e:
         st.error(f"❌ Unexpected error while processing the image: {e}")
 
-
-        # Prétraitement de l'image (adapter selon le modèle)
         img = image.resize((224, 224))
         img_array = np.expand_dims(np.array(img) / 255.0, axis=0)
-
-        # Prédiction
         prediction = cnn_model.predict(img_array)[0]
         classes = ["Healthy", "Disease A", "Disease B", "Disease C"]  # À adapter
         predicted_class = classes[np.argmax(prediction)]
