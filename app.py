@@ -103,23 +103,13 @@ with st.sidebar:
             st.success("Logged out successfully.")
             st.rerun()
 
-from pathlib import Path
-from PIL import Image
 import streamlit as st
-import os
-st.write(f"Dossier de travail actuel : {os.getcwd()}")
 
-# Chemin absolu avec Path
-image_path = Path(r"C:\Users\moham\Documents\app\cleaned-repo\Image\20200326_101256.jpg")
+# URL de l'image de tournesol
+image_url = "https://images.unsplash.com/photo-1508747703725-719777637510"
 
-st.write(f"Chemin image : {image_path}")
-st.write(f"Type : {type(image_path)}")
-
-if image_path.exists():
-    img = Image.open(image_path)
-    st.image(img, caption="Image trouvée ✅", use_column_width=True)
-else:
-    st.warning(f"⚠️ L'image n'a pas été trouvée. Vérifie le chemin : {image_path}")
+# Affichage de l'image
+st.image(image_url, caption="🌻 Tournesol", use_column_width=True)
 
 st.title("🌾 Smart Yield App")
 
