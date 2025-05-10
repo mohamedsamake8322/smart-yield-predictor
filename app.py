@@ -30,7 +30,6 @@ os.makedirs(DATA_DIR, exist_ok=True)
 # =========================================
 #         INITIAL SETUP & AUTH FILE
 # =========================================
-st.set_page_config(page_title="Smart Yield Predictor", layout="wide")
 
 USERS_FILE = "users.json"
 MODEL_FILE = "yield_model.pkl"
