@@ -578,14 +578,9 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is not None:
-    try:
-        # Sauvegarde temporaire de l'image téléchargée
-        unique_filename = f"temp_image_{uuid.uuid4().hex}.jpg"
-    with open(unique_filename, "wb") as f:
-        f.write(uploaded_file.getbuffer())
-except Exception as e:
-    st.error(f"❌ Error saving the image: {e}")
-    # Save the uploaded image temporarily
+try:
+    # Sauvegarde temporaire de l'image téléchargée
+    unique_filename = f"temp_image_{uuid.uuid4().hex}.jpg"
     with open(unique_filename, "wb") as f:
         f.write(uploaded_file.getbuffer())
 
@@ -593,12 +588,12 @@ except Exception as e:
     prediction = predict_disease(unique_filename, st.session_state["model"])
 
     # Display the results
-    predicted_class = np.argmax(
-        prediction, axis=-1
-    )  # Assuming the model gives probabilities
-    st.write(
-        f"Prediction: {predicted_class}"
-    )  # You may want to map this to actual labels
+    predicted_class = np.argmax(prediction, axis=-1)  # Assuming the model gives probabilities
+    st.write(f"Prediction: {predicted_class}")
+
+except Exception as e:
+    st.error(f"❌ Error saving the image: {e}")
+# You may want to map this to actual labels
 
     # Optional: Display the uploaded image
     st.image(uploaded_file, caption="Uploaded Leaf Image", use_column_width=True)
