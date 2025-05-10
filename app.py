@@ -577,12 +577,14 @@ uploaded_file = st.file_uploader(
     "Upload a plant leaf image", type=["jpg", "png", "jpeg"]
 )
 
+import uuid
+
 if uploaded_file is not None:
-{% load try_tags %}:
     # Sauvegarde temporaire de l'image téléchargée
     unique_filename = f"temp_image_{uuid.uuid4().hex}.jpg"
     with open(unique_filename, "wb") as f:
         f.write(uploaded_file.getbuffer())
+
 
     # Make the prediction
     prediction = predict_disease(unique_filename, st.session_state["model"])
@@ -878,7 +880,6 @@ if submit:
 # =========================================
 #     INTERACTIVE FIELD MAP (WATER STRESS)
 # =========================================
-
 import folium
 import streamlit as st
 from streamlit_folium import st_folium
