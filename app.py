@@ -99,22 +99,33 @@ with st.sidebar:
             st.rerun()
 
 import streamlit as st
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 import requests
 from io import BytesIO
 
 # URL de l'image de plante de riz
 image_url = "https://images.unsplash.com/photo-1595433562696-1c6b7c4c9b7b"
 
-# Téléchargement de l'image depuis l'URL
-response = requests.get(image_url)
-img = Image.open(BytesIO(response.content))
+try:
+    # Téléchargement de l'image depuis l'URL
+    response = requests.get(image_url)
 
-# Redimensionnement de l'image
-img = img.resize((400, 300))  # Ajustez les dimensions selon vos besoins
+    # Vérification du type MIME pour s'assurer que c'est une image
+    if "image" in response.headers.get("Content-Type", ""):
+        img = Image.open(BytesIO(response.content))
 
-# Affichage de l'image dans Streamlit
-st.image(img, caption="🌾 Plante de riz", use_column_width=False)
+        # Redimensionnement de l'image
+        img = img.resize((400, 300))  # Ajustez les dimensions selon vos besoins
+
+        # Affichage de l'image dans Streamlit
+        st.image(img, caption="🌾 Plante de riz", use_column_width=False)
+    else:
+        st.error("Le contenu récupéré n'est pas une image.")
+
+except UnidentifiedImageError as e:
+    st.error(f"Erreur lors de l'ouverture de l'image : {e}")
+except requests.RequestException as e:
+    st.error(f"Erreur de téléchargement de l'image : {e}")
 
 st.title("🌾 Smart Yield App")
 
