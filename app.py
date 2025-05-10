@@ -109,6 +109,8 @@ image_path = Path
 # Affiche le chemin pour debug
 st.write(f"Chemin image : {image_path}")
 
+image_path = Path("C:/Users/moham/Documents/app/cleaned-repo/Image/20200326_101256.jpg")
+
 if image_path.exists():
     img = Image.open(image_path)
     img = img.resize((400, 300))  # Ajuste les dimensions si nécessaire
@@ -579,11 +581,10 @@ if uploaded_file is not None:
     try:
         # Sauvegarde temporaire de l'image téléchargée
         unique_filename = f"temp_image_{uuid.uuid4().hex}.jpg"
-        with open(unique_filename, "wb") as f:
-            f.write(uploaded_file.getbuffer())
-    except Exception as e:
-        st.error(f"❌ Error saving the image: {e}")
-
+    with open(unique_filename, "wb") as f:
+        f.write(uploaded_file.getbuffer())
+except Exception as e:
+    st.error(f"❌ Error saving the image: {e}")
     # Save the uploaded image temporarily
     with open(unique_filename, "wb") as f:
         f.write(uploaded_file.getbuffer())
