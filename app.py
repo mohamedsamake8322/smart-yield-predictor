@@ -578,7 +578,7 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is not None:
-try:
+{% load try_tags %}:
     # Sauvegarde temporaire de l'image téléchargée
     unique_filename = f"temp_image_{uuid.uuid4().hex}.jpg"
     with open(unique_filename, "wb") as f:
