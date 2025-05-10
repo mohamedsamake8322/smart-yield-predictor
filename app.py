@@ -103,20 +103,24 @@ with st.sidebar:
             st.success("Logged out successfully.")
             st.rerun()
 
-image_path = Path
-(r"C:\Users\moham\Documents\app\cleaned-repo\Image\20200326_101256.jpg")
+from pathlib import Path
+from PIL import Image
+import streamlit as st
+import os
+st.write(f"Dossier de travail actuel : {os.getcwd()}")
 
-# Affiche le chemin pour debug
+# Chemin absolu avec Path
+image_path = Path(r"C:\Users\moham\Documents\app\cleaned-repo\Image\20200326_101256.jpg")
+
 st.write(f"Chemin image : {image_path}")
-
-image_path = Path("C:/Users/moham/Documents/app/cleaned-repo/Image/20200326_101256.jpg")
+st.write(f"Type : {type(image_path)}")
 
 if image_path.exists():
     img = Image.open(image_path)
-    img = img.resize((400, 300))  # Ajuste les dimensions si nécessaire
-    st.image(img, caption="Image satellite")
+    st.image(img, caption="Image trouvée ✅", use_column_width=True)
 else:
-    st.warning("⚠️ L'image n'a pas été trouvée. Vérifie le chemin.")
+    st.warning(f"⚠️ L'image n'a pas été trouvée. Vérifie le chemin : {image_path}")
+
 st.title("🌾 Smart Yield App")
 
 # =========================================
