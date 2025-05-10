@@ -104,12 +104,22 @@ with st.sidebar:
             st.rerun()
 
 import streamlit as st
+from PIL import Image
+import requests
+from io import BytesIO
 
-# URL de l'image de tournesol
-image_url = "https://images.unsplash.com/photo-1508747703725-719777637510"
+# URL de l'image de plante de riz
+image_url = "https://images.unsplash.com/photo-1595433562696-1c6b7c4c9b7b"
 
-# Affichage de l'image
-st.image(image_url, caption="🌻 Tournesol", use_column_width=True)
+# Téléchargement de l'image depuis l'URL
+response = requests.get(image_url)
+img = Image.open(BytesIO(response.content))
+
+# Redimensionnement de l'image
+img = img.resize((400, 300))  # Ajustez les dimensions selon vos besoins
+
+# Affichage de l'image dans Streamlit
+st.image(img, caption="🌾 Plante de riz", use_column_width=False)
 
 st.title("🌾 Smart Yield App")
 
