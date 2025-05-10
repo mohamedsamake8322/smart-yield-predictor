@@ -1,3 +1,5 @@
+import streamlit as st
+st.set_page_config(page_title="Smart Yield Predictor", layout="wide")
 # 📦 Imports standards de Python (stdlib)
 import os
 import json
@@ -15,22 +17,16 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import shap
-import streamlit as st
-st.set_page_config(page_title="Smart Yield Predictor", layout="wide")
-
+st.title("Welcome to Smart Yield Predictor")
 DATA_DIR = "data"
 MODEL_FILE = os.path.join(DATA_DIR, "yield_model.pkl")
 PREDICTION_FILE = os.path.join(DATA_DIR, "prediction_history.csv")
 USERS_FILE = os.path.join(DATA_DIR, "users.json")
 
 os.makedirs(DATA_DIR, exist_ok=True)
-
-
-
 # =========================================
 #         INITIAL SETUP & AUTH FILE
 # =========================================
-
 USERS_FILE = "users.json"
 MODEL_FILE = "yield_model.pkl"
 PREDICTION_FILE = "prediction_history.csv"
@@ -441,10 +437,6 @@ def display_results(image_path, prediction):
     )  # You may want to map this to actual labels
     # Optional: Display the probability if your model provides it
     st.write(f"Prediction Probability: {np.max(prediction)}")
-
-
-# Set up Streamlit page
-st.set_page_config(page_title="Plant Disease Detector", layout="wide")
 
 st.title("🌿 Plant Disease Detection")
 st.markdown(
