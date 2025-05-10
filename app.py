@@ -1,8 +1,6 @@
 import datetime
 import json
 import os
-from datetime import datetime
-
 import bcrypt
 import folium
 import joblib
@@ -14,7 +12,8 @@ import shap
 import streamlit as st
 from PIL import UnidentifiedImageError
 from streamlit_folium import st_folium
-
+from pathlib import Path
+from datetime import datetime
 DATA_DIR = "data"
 MODEL_FILE = os.path.join(DATA_DIR, "yield_model.pkl")
 PREDICTION_FILE = os.path.join(DATA_DIR, "prediction_history.csv")
@@ -100,8 +99,11 @@ with st.sidebar:
             st.success("Logged out successfully.")
             st.rerun()
 
-    st.image("Image/20200326_101256.jpg",
-            use_container_width=True,)
+image_path = Path("Image/20200326_101256.jpg")
+if image_path.exists():
+    st.image(str(image_path), caption="Image satellite", use_column_width=True)
+else:
+    st.warning("⚠️ L'image Image/20200326_101256.jpg est introuvable. Vérifie le chemin.")
 st.title("🌾 Smart Yield App")
 
 # =========================================
