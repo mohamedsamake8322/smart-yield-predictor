@@ -17,14 +17,6 @@ import streamlit as st
 from PIL import Image
 from PIL import UnidentifiedImageError
 from streamlit_folium import st_folium
-import datetime
-import os
-
-import numpy as np
-import pandas as pd
-import streamlit as st
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing import image
 
 DATA_DIR = "data"
 MODEL_FILE = os.path.join(DATA_DIR, "yield_model.pkl")
@@ -38,7 +30,7 @@ os.makedirs(DATA_DIR, exist_ok=True)
 # =========================================
 #         INITIAL SETUP & AUTH FILE
 # =========================================
-
+st.set_page_config(page_title="Smart Yield Predictor", layout="wide")
 
 USERS_FILE = "users.json"
 MODEL_FILE = "yield_model.pkl"
@@ -123,8 +115,7 @@ if image_path.exists():
     st.image(img, caption="Image satellite")
 else:
     st.warning("⚠️ L'image n'a pas été trouvée. Vérifie le chemin.")
-    st.set_page_config(page_title="Smart Yield Predictor", layout="wide")
-st.title("🌾 Smart AgriNest")
+st.title("🌾 Smart Yield App")
 
 # =========================================
 #           ADMIN PAGE
@@ -405,6 +396,16 @@ def load_cnn_model():
     model_path = "path_to_your_saved_model"  # Replace with your actual model path
     model = load_model(model_path)
     return model
+
+
+import datetime
+import os
+
+import numpy as np
+import pandas as pd
+import streamlit as st
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
 
 
 # Function to load the model
