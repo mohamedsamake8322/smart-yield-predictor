@@ -16,8 +16,7 @@ import pandas as pd
 import seaborn as sns
 import shap
 import streamlit as st
-st.set_page_config(page_title="Plant Disease Detector", layout="wide")
-
+st.set_page_config(page_title="Smart Yield Predictor", layout="wide")
 
 DATA_DIR = "data"
 MODEL_FILE = os.path.join(DATA_DIR, "yield_model.pkl")
@@ -443,6 +442,10 @@ def display_results(image_path, prediction):
     )  # You may want to map this to actual labels
     # Optional: Display the probability if your model provides it
     st.write(f"Prediction Probability: {np.max(prediction)}")
+
+
+# Set up Streamlit page
+st.set_page_config(page_title="Plant Disease Detector", layout="wide")
 
 st.title("🌿 Plant Disease Detection")
 st.markdown(
