@@ -447,8 +447,13 @@ model = load_model_from_path("path_to_your_saved_model")  # Replace with your mo
 uploaded_file = st.file_uploader("Upload a leaf image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file:
-    st.image(uploaded_file, caption="Uploaded Leaf", use_column_width=True)
-    st.info("Analyzing image... (model loading or training in background)")
+    try:
+        image = Image.open(uploaded_file)
+        st.image(image, caption="Uploaded Leaf", use_column_width=True)
+        st.info("Analyzing image... (model loading or training in background)")
+    except Exception as e:
+        st.error(f"❌ Error loading the image: {e}")
+
 
     # Prediction
     prediction = predict_disease(uploaded_file, model)
@@ -559,8 +564,14 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is not None:
-    # Generate a unique filename for the uploaded image
-    unique_filename = f"temp_image_{uuid.uuid4().hex}.jpg"
+    try:
+        # Sauvegarde temporaire de l'image téléchargée
+        unique_filename = f"temp_image_{uuid.uuid4().hex}.jpg"
+        with open(unique_filename, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+    except Exception as e:
+        st.error(f"❌ Error saving the image: {e}")
+
 
     # Save the uploaded image temporarily
     with open(unique_filename, "wb") as f:
@@ -705,10 +716,14 @@ with tab1:
     )
 
     if uploaded_file is not None:
-        # Save the uploaded image temporarily
+    try:
+        # Sauvegarde temporaire de l'image téléchargée
         unique_filename = f"temp_image_{uuid.uuid4().hex}.jpg"
         with open(unique_filename, "wb") as f:
             f.write(uploaded_file.getbuffer())
+    except Exception as e:
+        st.error(f"❌ Error saving the image: {e}")
+
 
         # Make the prediction
         prediction = predict_disease(unique_filename, st.session_state["model"])
@@ -956,8 +971,30 @@ uploaded_file = st.file_uploader("Choose an image", type=["jpg", "png", "jpeg"])
 
 if uploaded_file and cnn_model:
     try:
+        # Essayer d'ouvrir l'image et la convertir en RGB
         image = Image.open(uploaded_file).convert("RGB")
+        
+        # Affichage de l'image téléchargée
         st.image(image, caption="Uploaded Leaf Image", use_column_width=True)
+
+        # Prétraitement pour le modèle (adapté selon ton modèle)
+        img = image.resize((224, 224))  # S'assurer que la taille corresponde à celle attendue par ton modèle
+        img_array = np.expand_dims(np.array(img) / 255.0, axis=0)  # Normalisation de l'image
+
+        # Prédiction avec le modèle
+        prediction = cnn_model.predict(img_array)[0]
+        classes = ["Healthy", "Disease A", "Disease B", "Disease C"]  # Remplace avec tes classes
+        predicted_class = classes[np.argmax(prediction)]
+        confidence = np.max(prediction) * 100
+
+        # Affichage du résultat de la prédiction
+        st.success(f"🧬 Prediction: **{predicted_class}** ({confidence:.2f}%)")
+
+    except UnidentifiedImageError:
+        st.error("❌ The uploaded file is not a valid image. Please upload a JPG or PNG file.")
+    except Exception as e:
+        st.error(f"❌ Unexpected error while processing the image: {e}")
+
 
         # Prétraitement de l'image (adapter selon le modèle)
         img = image.resize((224, 224))
