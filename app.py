@@ -100,10 +100,8 @@ with st.sidebar:
             st.success("Logged out successfully.")
             st.rerun()
 
-    st.image(
-            "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
-            use_container_width=True,
-    )
+    st.image("Image/20200326_101256.jpg",
+            use_container_width=True,)
 st.title("🌾 Smart Yield App")
 
 # =========================================
