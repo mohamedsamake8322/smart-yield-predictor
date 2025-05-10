@@ -10,23 +10,23 @@ USERS_FILE = os.path.join(DATA_DIR, "users.json")
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
+import datetime
 
 # =========================================
 #              IMPORTS
 # =========================================
-import os
 import json
+from datetime import datetime
+
 import bcrypt
-import joblib
-import shap
 import folium
+import joblib
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
+import shap
 import streamlit as st
-import datetime
-from datetime import datetime
 from streamlit_folium import st_folium
 
 # =========================================
@@ -44,16 +44,21 @@ if not os.path.exists(USERS_FILE):
     default_users = {"admin": {"password": hashed, "role": "admin"}}
     with open(USERS_FILE, "w") as f:
         json.dump(default_users, f, indent=4)
-    print("✅ Default admin user created: username = 'mohamedsamake2000', password = '78772652Moh#'")
+    print(
+        "✅ Default admin user created: username = 'mohamedsamake2000', password = '78772652Moh#'"
+    )
 
 # =========================================
 #           AUTHENTICATION SYSTEM
 # =========================================
+
+
 def load_users():
     if os.path.exists(USERS_FILE):
         with open(USERS_FILE, "r") as f:
             return json.load(f)
     return {}
+
 
 def authenticate(username, password):
     users = load_users()
@@ -62,6 +67,7 @@ def authenticate(username, password):
         if bcrypt.checkpw(password.encode(), stored_hash.encode()):
             return users[username]["role"]
     return None
+
 
 if "authenticated" not in st.session_state:
     st.session_state.update({"authenticated": False, "user": None, "role": None})
@@ -77,7 +83,9 @@ if not st.session_state.authenticated:
     if login_button:
         role = authenticate(username, password)
         if role:
-            st.session_state.update({"authenticated": True, "user": username, "role": role})
+            st.session_state.update(
+                {"authenticated": True, "user": username, "role": role}
+            )
             st.success(f"✅ Welcome, {username}!")
             st.rerun()
         else:
@@ -87,21 +95,30 @@ if not st.session_state.authenticated:
 # =========================================
 #           SIDEBAR & LOGOUT
 # =========================================
+
 with st.sidebar:
     if st.session_state.authenticated:
         if st.button("🚪 Logout"):
-            st.session_state.update({"authenticated": False, "user": None, "role": None})
+            st.session_state.update(
+                {"authenticated": False, "user": None, "role": None}
+            )
             st.success("Logged out successfully.")
             st.rerun()
 
-        st.image("https://images.unsplash.com/photo-1501004318641-b39e6451bec6", use_container_width=True)
+        st.image(
+            "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
+            use_container_width=True,
+        )
         st.title("🌾 Smart Yield App")
 
 # =========================================
 #           ADMIN PAGE
 # =========================================
+
+
 def is_admin():
-    return st.session_state.role == 'admin'
+    return st.session_state.role == "admin"
+
 
 with st.sidebar:
     if is_admin():
@@ -111,7 +128,9 @@ with st.sidebar:
             users = load_users()
             for user, info in users.items():
                 st.write(f"**{user}** - Role: {info['role']}")
-                if user != st.session_state.user and st.button(f"Delete {user}", key=f"del_{user}"):
+                if user != st.session_state.user and st.button(
+                    f"Delete {user}", key=f"del_{user}"
+                ):
                     del users[user]
                     with open(USERS_FILE, "w") as f:
                         json.dump(users, f)
@@ -129,13 +148,25 @@ with st.sidebar:
                 if new_username in users:
                     st.error("User already exists.")
                 else:
-                    hashed_password = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
-                    users[new_username] = {"password": hashed_password, "role": new_role}
+                    hashed_password = bcrypt.hashpw(
+                        new_password.encode(), bcrypt.gensalt()
+                    ).decode()
+                    users[new_username] = {
+                        "password": hashed_password,
+                        "role": new_role,
+                    }
                     with open(USERS_FILE, "w") as f:
                         json.dump(users, f)
                     st.success(f"User {new_username} added.")
                     st.rerun()
+
+# =========================================
+#           HISTORY LOGIC
+# =========================================
+
 HISTORY_FILE = "detection_history.csv"
+
+
 def log_detection(filename, prediction, confidence=None, user=None):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     entry = {
@@ -143,7 +174,7 @@ def log_detection(filename, prediction, confidence=None, user=None):
         "filename": filename,
         "prediction": prediction,
         "confidence": confidence if confidence else "N/A",
-        "user": user if user else "anonymous"
+        "user": user if user else "anonymous",
     }
 
     if os.path.exists(HISTORY_FILE):
@@ -154,17 +185,19 @@ def log_detection(filename, prediction, confidence=None, user=None):
 
     df.to_csv(HISTORY_FILE, index=False)
 
-# Example usage — place this in the appropriate part of your main app logic
+
+# =========================================
+#           MAIN APP LOGIC
+# =========================================
+
+menu = st.sidebar.selectbox("Navigation", ["Disease Detection", "History"])
+
 if menu == "Disease Detection":
-    # Your detection logic here
-    pass  # Replace with actual detection code
+    st.subheader("Disease Detection")
+    # Detection logic placeholder
+    st.info("Detection logic to be implemented here.")
 
-
-    # Cette ligne doit être hors du bloc if/else
-    df.to_csv(HISTORY_FILE, index=False)
-
-
-    elif menu == "History":
+elif menu == "History":
     st.subheader("Detection History")
 
     if os.path.exists(HISTORY_FILE):
@@ -174,10 +207,13 @@ if menu == "Disease Detection":
         col1, col2 = st.columns(2)
 
         with col1:
-            disease_filter = st.selectbox("Filter by prediction", options=["All"] + sorted(df["prediction"].unique().tolist()))
+            disease_filter = st.selectbox(
+                "Filter by prediction",
+                options=["All"] + sorted(df["prediction"].unique().tolist()),
+            )
 
         with col2:
-            date_filter = st.date_input("Filter by date", value=None)
+            date_filter = st.date_input("Filter by date")
 
         # Apply filters
         filtered_df = df.copy()
@@ -190,11 +226,19 @@ if menu == "Disease Detection":
             filtered_df = filtered_df[filtered_df["timestamp"].dt.date == date_filter]
 
         st.markdown("### Filtered Results")
-        st.dataframe(filtered_df.sort_values(by="timestamp", ascending=False), use_container_width=True)
+        st.dataframe(
+            filtered_df.sort_values(by="timestamp", ascending=False),
+            use_container_width=True,
+        )
 
         # Export option
         csv = filtered_df.to_csv(index=False).encode("utf-8")
-        st.download_button("Download Filtered History", data=csv, file_name="filtered_detection_history.csv", mime="text/csv")
+        st.download_button(
+            "Download Filtered History",
+            data=csv,
+            file_name="filtered_detection_history.csv",
+            mime="text/csv",
+        )
 
     else:
         st.info("No detection history found yet.")
@@ -202,6 +246,7 @@ if menu == "Disease Detection":
 # =========================================
 #         MODEL LOADING & SHAP
 # =========================================
+
 model = None
 shap_enabled = False
 
@@ -213,18 +258,24 @@ if os.path.exists(MODEL_FILE):
     except Exception as e:
         st.warning(f"SHAP loading issue: {e}")
 
-st.info("🌱 Smart Yield Predictor is now enhanced with optimized performance and new features.")
+st.info(
+    "🌱 Smart Yield Predictor is now enhanced with optimized performance and new features."
+)
 
 # =========================================
 #           UTILITY FUNCTIONS
 # =========================================
+
+
 def predict_yield_model(temp, humidity, precipitation, ph, fertilizer):
     features = np.array([[temp, humidity, precipitation, ph, fertilizer]])
     prediction = model.predict(features) if model else [0.0]
     return round(prediction[0], 2), features
 
+
 def explain_prediction(features):
     return explainer(features) if shap_enabled else None
+
 
 def save_prediction(inputs, prediction, location=None, source="manual"):
     entry = {
@@ -237,18 +288,26 @@ def save_prediction(inputs, prediction, location=None, source="manual"):
         "Fertilizer": inputs[4],
         "Latitude": location[0] if location else None,
         "Longitude": location[1] if location else None,
-        "Predicted_Yield": prediction
+        "Predicted_Yield": prediction,
     }
     df = pd.DataFrame([entry])
     try:
-        df.to_csv(PREDICTION_FILE, mode='a', header=not os.path.exists(PREDICTION_FILE), index=False)
+        df.to_csv(
+            PREDICTION_FILE,
+            mode="a",
+            header=not os.path.exists(PREDICTION_FILE),
+            index=False,
+        )
     except Exception as e:
         st.error(f"❌ Error saving prediction: {e}")
+
 
 def show_visualizations():
     if os.path.exists(PREDICTION_FILE):
         df = pd.read_csv(PREDICTION_FILE)
-        st.markdown(f"**Average Yield:** {df['Predicted_Yield'].mean():.2f} | Max: {df['Predicted_Yield'].max():.2f} | Min: {df['Predicted_Yield'].min():.2f}")
+        st.markdown(
+            f"**Average Yield:** {df['Predicted_Yield'].mean():.2f} | Max: {df['Predicted_Yield'].max():.2f} | Min: {df['Predicted_Yield'].min():.2f}"
+        )
         col1, col2 = st.columns(2)
         with col1:
             plt.figure(figsize=(10, 4))
@@ -256,22 +315,45 @@ def show_visualizations():
             plt.xticks(rotation=45)
             st.pyplot(plt.gcf())
         with col2:
-            corr = df[["Temperature", "Humidity", "Precipitation", "pH", "Fertilizer", "Predicted_Yield"]].corr()
+            corr = df[
+                [
+                    "Temperature",
+                    "Humidity",
+                    "Precipitation",
+                    "pH",
+                    "Fertilizer",
+                    "Predicted_Yield",
+                ]
+            ].corr()
             sns.heatmap(corr, annot=True, cmap="YlGnBu")
             st.pyplot(plt.gcf())
     else:
         st.info("No prediction history found.")
 
+
 # =========================================
 #               MAIN UI
 # =========================================
+
+import shap
+import streamlit as st
+from tensorflow.keras.models import load_model
+
+# Title and description
 st.title("🌾 Smart Agricultural Yield Prediction")
 st.markdown("Predict yield based on environmental and soil data with parcel location.")
 st.divider()
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "🧬 Manual Input", "📍 Field Location", "📁 CSV Upload", "📊 Visualizations", "📥 History Export"
-])
+# Create tabs for different sections
+tab1, tab2, tab3, tab4, tab5 = st.tabs(
+    [
+        "🧬 Manual Input",
+        "📍 Field Location",
+        "📁 CSV Upload",
+        "📊 Visualizations",
+        "📥 History Export",
+    ]
+)
 
 # Tab 1: Manual Input
 with tab1:
@@ -285,6 +367,7 @@ with tab1:
             ph = st.slider("🧪 Soil pH", 3.5, 9.0, 6.5)
         with c3:
             fertilizer = st.number_input("🌿 Fertilizer (kg/ha)", 0.0, 500.0, 100.0)
+
         submitted = st.form_submit_button("Predict")
 
     if submitted:
@@ -292,6 +375,7 @@ with tab1:
         prediction, features = predict_yield_model(*st.session_state.inputs)
         st.metric("Estimated Yield", f"{prediction} q/ha")
         save_prediction(st.session_state.inputs, prediction)
+
         if shap_enabled:
             with st.expander("🔍 SHAP Explanation"):
                 shap_values = explain_prediction(features)
@@ -299,28 +383,65 @@ with tab1:
                 st.pyplot(shap.plots.waterfall(shap_values[0]))
         else:
             st.info("🔎 SHAP explanations not available.")
-# Load the model (this will be done once the model is available)
+
+
+# Function to load the model (path needs to be correct)
 def load_cnn_model():
-    model_path = "path_to_your_saved_model"  # Replace with your model path
+    model_path = "path_to_your_saved_model"  # Replace with your actual model path
     model = load_model(model_path)
     return model
 
+
+import datetime
+import os
+
+import numpy as np
+import pandas as pd
+import streamlit as st
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
+
+
+# Function to load the model
+def load_model_from_path(model_path):
+    model = load_model(model_path)
+    return model
+
+
 # Function to make the prediction
 def predict_disease(img_path, model):
-    img = image.load_img(img_path, target_size=(224, 224))  # Adjust the size to your model's input size
+    img = image.load_img(
+        img_path, target_size=(224, 224)
+    )  # Adjust the size to your model's input size
     img_array = image.img_to_array(img) / 255.0  # Normalize the image
     img_array = np.expand_dims(img_array, axis=0)  # Add a batch dimension
     prediction = model.predict(img_array)
     return prediction
 
+
 # Display the image and the prediction
 def display_results(image_path, prediction):
-    st.image(image_path, caption='Uploaded Image', use_column_width=True)
-    st.write(f"Prediction: {prediction}")
+    st.image(image_path, caption="Uploaded Image", use_column_width=True)
+    predicted_class = np.argmax(
+        prediction, axis=-1
+    )  # Assuming the model gives probabilities
+    st.write(
+        f"Predicted Class: {predicted_class}"
+    )  # You may want to map this to actual labels
+    # Optional: Display the probability if your model provides it
+    st.write(f"Prediction Probability: {np.max(prediction)}")
+
+
+# Set up Streamlit page
 st.set_page_config(page_title="Plant Disease Detector", layout="wide")
 
 st.title("🌿 Plant Disease Detection")
-st.markdown("Upload a leaf image to detect possible diseases using a deep learning model.")
+st.markdown(
+    "Upload a leaf image to detect possible diseases using a deep learning model."
+)
+
+# Load the model (path to your saved model)
+model = load_model_from_path("path_to_your_saved_model")  # Replace with your model path
 
 # File uploader section
 uploaded_file = st.file_uploader("Upload a leaf image", type=["jpg", "jpeg", "png"])
@@ -328,15 +449,19 @@ uploaded_file = st.file_uploader("Upload a leaf image", type=["jpg", "jpeg", "pn
 if uploaded_file:
     st.image(uploaded_file, caption="Uploaded Leaf", use_column_width=True)
     st.info("Analyzing image... (model loading or training in background)")
-    # Placeholder for prediction (to be replaced by model prediction once trained)
-    st.success("Predicted class: Tomato - Late Blight")  # Example output
+
+    # Prediction
+    prediction = predict_disease(uploaded_file, model)
+
+    # Display results
+    display_results(uploaded_file, prediction)
 
     # Save detection to history (CSV example)
     history_path = "detection_history.csv"
     new_entry = {
         "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "predicted_disease": "Tomato - Late Blight",
-        "image_name": uploaded_file.name
+        "predicted_disease": "Tomato - Late Blight",  # Replace with actual disease
+        "image_name": uploaded_file.name,
     }
     if os.path.exists(history_path):
         df = pd.read_csv(history_path)
@@ -346,28 +471,119 @@ if uploaded_file:
     df.to_csv(history_path, index=False)
 
     st.info("Detection saved to history.")
+import datetime
+import os
+import uuid
 
-# Section for predefined disease info
+import numpy as np
+import pandas as pd
+import streamlit as st
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
+
+
+# Function to load the model
+def load_model_from_path(model_path):
+    model = load_model(model_path)
+    return model
+
+
+# Function to make the prediction
+def predict_disease(img_path, model):
+    img = image.load_img(
+        img_path, target_size=(224, 224)
+    )  # Adjust the size to your model's input size
+    img_array = image.img_to_array(img) / 255.0  # Normalize the image
+    img_array = np.expand_dims(img_array, axis=0)  # Add a batch dimension
+    prediction = model.predict(img_array)
+    return prediction
+
+
+# Function to display disease information
+def display_disease_info(disease_name, disease_info):
+    st.write(f"**Symptoms:** {disease_info[disease_name]['Symptoms']}")
+    st.write(f"**Cause:** {disease_info[disease_name]['Cause']}")
+    st.write(f"**Treatment:** {disease_info[disease_name]['Treatment']}")
+
+
+# Function to save prediction history
+def save_detection_to_history(uploaded_file, prediction):
+    history_path = "detection_history.csv"
+    new_entry = {
+        "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "predicted_disease": prediction,  # Replace with actual disease prediction
+        "image_name": uploaded_file.name,
+    }
+    if os.path.exists(history_path):
+        df = pd.read_csv(history_path)
+        df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
+    else:
+        df = pd.DataFrame([new_entry])
+    df.to_csv(history_path, index=False)
+
+
+# Streamlit user interface
+st.title("🌿 Plant Disease Detection")
+
+# Load the model if it's not already loaded in session state
+if "model" not in st.session_state:
+    st.session_state["model"] = load_model_from_path(
+        "path_to_your_saved_model"
+    )  # Replace with actual model path
+
+# Display disease information
 st.subheader("📚 Disease Information")
 disease_info = {
     "Tomato - Late Blight": {
         "Symptoms": "Dark, water-soaked spots on leaves and stems. White fungal growth under leaves.",
         "Cause": "Caused by the oomycete Phytophthora infestans.",
-        "Treatment": "Apply fungicides early. Remove and destroy infected plants. Avoid overhead watering."
+        "Treatment": "Apply fungicides early. Remove and destroy infected plants. Avoid overhead watering.",
     },
     "Corn - Leaf Spot": {
         "Symptoms": "Small, circular lesions with tan centers and dark borders.",
         "Cause": "Caused by fungal pathogens like Bipolaris spp.",
-        "Treatment": "Use resistant varieties. Practice crop rotation. Apply fungicides if necessary."
-    }
+        "Treatment": "Use resistant varieties. Practice crop rotation. Apply fungicides if necessary.",
+    },
 }
 
-selected_disease = st.selectbox("Select a disease to learn more:", list(disease_info.keys()))
+selected_disease = st.selectbox(
+    "Select a disease to learn more:", list(disease_info.keys())
+)
 
 if selected_disease:
-    st.write(f"**Symptoms:** {disease_info[selected_disease]['Symptoms']}")
-    st.write(f"**Cause:** {disease_info[selected_disease]['Cause']}")
-    st.write(f"**Treatment:** {disease_info[selected_disease]['Treatment']}")
+    display_disease_info(selected_disease, disease_info)
+
+# File uploader section
+uploaded_file = st.file_uploader(
+    "Upload a plant leaf image", type=["jpg", "png", "jpeg"]
+)
+
+if uploaded_file is not None:
+    # Generate a unique filename for the uploaded image
+    unique_filename = f"temp_image_{uuid.uuid4().hex}.jpg"
+
+    # Save the uploaded image temporarily
+    with open(unique_filename, "wb") as f:
+        f.write(uploaded_file.getbuffer())
+
+    # Make the prediction
+    prediction = predict_disease(unique_filename, st.session_state["model"])
+
+    # Display the results
+    predicted_class = np.argmax(
+        prediction, axis=-1
+    )  # Assuming the model gives probabilities
+    st.write(
+        f"Prediction: {predicted_class}"
+    )  # You may want to map this to actual labels
+
+    # Optional: Display the uploaded image
+    st.image(uploaded_file, caption="Uploaded Leaf Image", use_column_width=True)
+
+    # Save detection to history
+    save_detection_to_history(uploaded_file, predicted_class)
+
+    st.info("Detection saved to history.")
 
 # Optional: Display history
 if st.checkbox("Show detection history"):
@@ -376,31 +592,136 @@ if st.checkbox("Show detection history"):
         st.dataframe(history_df)
     else:
         st.info("No detection history available yet.")
-# Streamlit user interface
-st.title("Plant Disease Detection")
+import datetime
 
-# Load the model
-if 'model' not in st.session_state:
-    st.session_state['model'] = load_cnn_model()  # Load the model if not already loaded
+import folium
+import numpy as np
+import pandas as pd
+import streamlit as st
+from st_folium import st_folium
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
 
-# Form to upload an image
-uploaded_file = st.file_uploader("Upload a plant leaf image", type=["jpg", "png", "jpeg"])
 
-if uploaded_file is not None:
-    # Save the uploaded image temporarily
-    with open("temp_image.jpg", "wb") as f:
-        f.write(uploaded_file.getbuffer())
-    
-    # Make the prediction
-    prediction = predict_disease("temp_image.jpg", st.session_state['model'])
-    
+# Function to load the model
+def load_model_from_path(model_path):
+    model = load_model(model_path)
+    return model
+
+
+# Function to make the prediction
+def predict_disease(img_path, model):
+    img = image.load_img(
+        img_path, target_size=(224, 224)
+    )  # Adjust the size to your model's input size
+    img_array = image.img_to_array(img) / 255.0  # Normalize the image
+    img_array = np.expand_dims(img_array, axis=0)  # Add a batch dimension
+    prediction = model.predict(img_array)
+
     # Decode the prediction
-    class_names = ["Tomato_Early_blight", "Tomato_Late_blight", "Tomato_Healthy", "Maize_Common_rust", ...]  # List of diseases
-    predicted_class = class_names[np.argmax(prediction)]  # Find the class with the highest probability
+    class_names = [
+        "Tomato_Early_blight",
+        "Tomato_Late_blight",
+        "Tomato_Healthy",
+        "Maize_Common_rust",
+        # Add other disease class names here...
+    ]
+    predicted_class = class_names[
+        np.argmax(prediction)
+    ]  # Find the class with the highest probability
 
-    # Display the results
-    display_results("temp_image.jpg", predicted_class)
-# Tab 2: Location
+    return predicted_class
+
+
+# Function to display disease information
+def display_disease_info(disease_name, disease_info):
+    st.write(f"**Symptoms:** {disease_info[disease_name]['Symptoms']}")
+    st.write(f"**Cause:** {disease_info[disease_name]['Cause']}")
+    st.write(f"**Treatment:** {disease_info[disease_name]['Treatment']}")
+
+
+# Function to save prediction history
+def save_detection_to_history(uploaded_file, prediction):
+    history_path = "detection_history.csv"
+    new_entry = {
+        "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "predicted_disease": prediction,
+        "image_name": uploaded_file.name,
+    }
+    if os.path.exists(history_path):
+        df = pd.read_csv(history_path)
+        df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
+    else:
+        df = pd.DataFrame([new_entry])
+    df.to_csv(history_path, index=False)
+
+
+# Streamlit user interface
+st.title("🌿 Plant Disease Detection")
+
+# Load the model if it's not already loaded in session state
+if "model" not in st.session_state:
+    st.session_state["model"] = load_model_from_path(
+        "path_to_your_saved_model"
+    )  # Replace with actual model path
+
+# Display disease information
+st.subheader("📚 Disease Information")
+disease_info = {
+    "Tomato - Late Blight": {
+        "Symptoms": "Dark, water-soaked spots on leaves and stems. White fungal growth under leaves.",
+        "Cause": "Caused by the oomycete Phytophthora infestans.",
+        "Treatment": "Apply fungicides early. Remove and destroy infected plants. Avoid overhead watering.",
+    },
+    "Corn - Leaf Spot": {
+        "Symptoms": "Small, circular lesions with tan centers and dark borders.",
+        "Cause": "Caused by fungal pathogens like Bipolaris spp.",
+        "Treatment": "Use resistant varieties. Practice crop rotation. Apply fungicides if necessary.",
+    },
+}
+
+selected_disease = st.selectbox(
+    "Select a disease to learn more:", list(disease_info.keys())
+)
+
+if selected_disease:
+    display_disease_info(selected_disease, disease_info)
+
+# Tab for disease detection (Upload image and predict)
+tab1, tab2, tab3, tab4, tab5 = st.tabs(
+    [
+        "🧬 Manual Input",
+        "📍 Field Location",
+        "📁 CSV Upload",
+        "📊 Visualizations",
+        "📥 History Export",
+    ]
+)
+
+# Tab 1: Disease Prediction
+with tab1:
+    uploaded_file = st.file_uploader(
+        "Upload a plant leaf image", type=["jpg", "png", "jpeg"]
+    )
+
+    if uploaded_file is not None:
+        # Save the uploaded image temporarily
+        unique_filename = f"temp_image_{uuid.uuid4().hex}.jpg"
+        with open(unique_filename, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+
+        # Make the prediction
+        prediction = predict_disease(unique_filename, st.session_state["model"])
+
+        # Display the results
+        display_results(unique_filename, prediction)
+
+        # Save detection to history
+        save_detection_to_history(uploaded_file, prediction)
+
+        st.info("Detection saved to history.")
+
+# Tab 2: Field Location
 with tab2:
     st.subheader("📍 Select Field Location")
     m = folium.Map(location=[14.5, -14.5], zoom_start=6)
@@ -416,10 +737,13 @@ with tab2:
             if st.button("Predict with this location"):
                 prediction, features = predict_yield_model(*st.session_state.inputs)
                 st.metric("Estimated Yield", f"{prediction} q/ha")
-                save_prediction(st.session_state.inputs, prediction, location=st.session_state["selected_location"])
+                save_prediction(
+                    st.session_state.inputs,
+                    prediction,
+                    location=st.session_state["selected_location"],
+                )
         else:
             st.warning("⚠️ Please make a prediction first in the 'Manual Input' tab.")
-
 # Tab 3: CSV Upload
 with tab3:
     st.subheader("Upload CSV File")
@@ -429,7 +753,14 @@ with tab3:
         required_cols = ["Temperature", "Humidity", "Precipitation", "pH", "Fertilizer"]
         if all(col in df_csv.columns for col in required_cols):
             try:
-                df_csv["Predicted_Yield"] = model.predict(df_csv[required_cols])
+                # Prepare the data for prediction (ensure it's in the correct format)
+                input_data = df_csv[required_cols].values  # Convert to NumPy array
+                predictions = model.predict(input_data)
+                df_csv["Predicted_Yield"] = (
+                    predictions  # Add predictions as a new column
+                )
+
+                # Display and save the output
                 st.dataframe(df_csv)
                 df_csv.to_csv("predictions_output.csv", index=False)
                 st.success("Predictions added to CSV!")
@@ -440,20 +771,31 @@ with tab3:
 
 # Tab 4: Visualizations
 with tab4:
-    show_visualizations()
+    if "show_visualizations" in globals():
+        show_visualizations()
+    else:
+        st.warning("Visualization function not defined.")
 
 # Tab 5: Export
 with tab5:
     st.subheader("Export Prediction History")
+    PREDICTION_FILE = "detection_history.csv"  # Ensure this file exists
     if os.path.exists(PREDICTION_FILE):
         df = pd.read_csv(PREDICTION_FILE)
-        st.download_button("Download Prediction History", df.to_csv(index=False), file_name="prediction_history.csv", mime="text/csv")
+        st.download_button(
+            "Download Prediction History",
+            df.to_csv(index=False),
+            file_name="prediction_history.csv",
+            mime="text/csv",
+        )
     else:
         st.info("No prediction history available.")
 
 # Footer
 st.markdown("---")
 st.markdown("© 2025 AgriNest • Powered by Mohamed SAMAKE • AI Agriculture")
+
+import matplotlib.pyplot as plt
 
 # =========================================
 #   FERTILIZATION RECOMMENDATION SYSTEM
@@ -478,13 +820,10 @@ if submit:
     st.subheader("📋 Recommended Fertilizer Doses")
 
     # Simple rule-based logic (can be improved with real agronomic data)
-    recommendation = {
-        "N": max(0, 120 - n),
-        "P": max(0, 90 - p),
-        "K": max(0, 100 - k)
-    }
+    recommendation = {"N": max(0, 120 - n), "P": max(0, 90 - p), "K": max(0, 100 - k)}
 
-    st.markdown(f"""
+    st.markdown(
+        f"""
     - **Crop:** {crop}  
     - **Soil Type:** {soil_type}  
     - **Soil pH:** {ph}  
@@ -493,17 +832,37 @@ if submit:
     - Nitrogen (N): **{recommendation['N']} kg/ha**
     - Phosphorus (P): **{recommendation['P']} kg/ha**
     - Potassium (K): **{recommendation['K']} kg/ha**
-    """)
+    """
+    )
 
+    # Visualize fertilizer recommendations
+    fig, ax = plt.subplots()
+    ax.bar(
+        recommendation.keys(),
+        recommendation.values(),
+        color=["blue", "orange", "green"],
+    )
+    ax.set_title("Recommended Fertilizer Doses (kg/ha)")
+    ax.set_ylabel("Amount (kg/ha)")
+    st.pyplot(fig)
+
+    # Soil pH warnings
     if ph < 5.5:
         st.warning("⚠️ The soil is too acidic. Liming may be recommended.")
     elif ph > 7.5:
-        st.warning("⚠️ The soil is alkaline. pH correction may be required depending on the crop.")
+        st.warning(
+            "⚠️ The soil is alkaline. pH correction may be required depending on the crop."
+        )
 
     st.success("✅ Fertilizer recommendation successfully generated.")
 # =========================================
 #     INTERACTIVE FIELD MAP (WATER STRESS)
 # =========================================
+
+import folium
+import streamlit as st
+from streamlit_folium import st_folium
+
 st.header("🗺️ Field Map & Water Stress Simulation")
 
 with st.form("map_form"):
@@ -519,9 +878,10 @@ with st.form("map_form"):
 if map_submit:
     st.success(f"🗺️ Displaying {field_name} in {region}")
 
+    # Create the map centered at the provided latitude and longitude
     m = folium.Map(location=[latitude, longitude], zoom_start=7)
 
-    # Define stress color based on level
+    # Define stress color based on water stress level
     if stress_level < 30:
         color = "green"
     elif stress_level < 70:
@@ -529,43 +889,64 @@ if map_submit:
     else:
         color = "red"
 
+    # Popup text showing field details and stress level
     popup_text = f"""
     <b>{field_name}</b><br>
     Region: {region}<br>
     Water Stress Level: {stress_level}%
     """
 
+    # Add marker with color based on stress level
     folium.Marker(
         location=[latitude, longitude],
         popup=popup_text,
-        icon=folium.Icon(color=color, icon="leaf")
+        icon=folium.Icon(color=color, icon="leaf"),
     ).add_to(m)
 
+    # Add circle indicating the affected area based on stress level
     folium.Circle(
         location=[latitude, longitude],
-        radius=1000,
+        radius=1000,  # You can adjust this based on how large you want the radius to be
         color=color,
         fill=True,
-        fill_opacity=0.4
+        fill_opacity=0.4,
     ).add_to(m)
 
+    # Render the map
     st_data = st_folium(m, width=700, height=500)
+if stress_level < 20:
+    color = "green"
+elif stress_level < 40:
+    color = "lightgreen"
+elif stress_level < 60:
+    color = "orange"
+elif stress_level < 80:
+    color = "red"
+else:
+    color = "darkred"
 # =========================================
 #       LEAF DISEASE DETECTION (CNN)
 # =========================================
-from PIL import Image
+import os
+
+import numpy as np
+import streamlit as st
 import tensorflow as tf
+from PIL import Image
 
 st.header("🧪 Leaf Disease Detection")
 
-# Placeholder model path — change with your actual model
+# Dossier contenant le modèle (à adapter selon l'organisation de ton projet)
+DATA_DIR = "data"
 CNN_MODEL_PATH = os.path.join(DATA_DIR, "leaf_disease_model.h5")
+
 
 @st.cache_resource
 def load_cnn_model():
     if os.path.exists(CNN_MODEL_PATH):
         return tf.keras.models.load_model(CNN_MODEL_PATH)
     return None
+
 
 cnn_model = load_cnn_model()
 
@@ -578,19 +959,22 @@ if uploaded_file and cnn_model:
         image = Image.open(uploaded_file).convert("RGB")
         st.image(image, caption="Uploaded Leaf Image", use_column_width=True)
 
-        # Preprocess image (adapt based on your model input)
+        # Prétraitement de l'image (adapter selon le modèle)
         img = image.resize((224, 224))
         img_array = np.expand_dims(np.array(img) / 255.0, axis=0)
 
-        # Predict
+        # Prédiction
         prediction = cnn_model.predict(img_array)[0]
-        classes = ["Healthy", "Disease A", "Disease B", "Disease C"]  # Modify with your real class names
+        classes = ["Healthy", "Disease A", "Disease B", "Disease C"]  # À adapter
         predicted_class = classes[np.argmax(prediction)]
         confidence = np.max(prediction) * 100
 
         st.success(f"🧬 Prediction: **{predicted_class}** ({confidence:.2f}%)")
+
     except Exception as e:
         st.error(f"Error processing the image: {e}")
 
 elif uploaded_file and not cnn_model:
-    st.warning("🚫 CNN model not found. Please upload 'leaf_disease_model.h5' to the 'data' folder.")
+    st.warning(
+        "🚫 CNN model not found. Please upload 'leaf_disease_model.h5' to the 'data' folder."
+    )
