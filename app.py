@@ -1,9 +1,13 @@
-import datetime
-import json
+# 📦 Imports standards de Python (stdlib)
 import os
+import json
+from datetime import datetime
+from pathlib import Path
+
+# 🧪 Imports de bibliothèques externes (pip install)
 import bcrypt
-import folium
 import joblib
+import folium
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -12,8 +16,7 @@ import shap
 import streamlit as st
 from PIL import UnidentifiedImageError
 from streamlit_folium import st_folium
-from pathlib import Path
-from datetime import datetime
+
 DATA_DIR = "data"
 MODEL_FILE = os.path.join(DATA_DIR, "yield_model.pkl")
 PREDICTION_FILE = os.path.join(DATA_DIR, "prediction_history.csv")
@@ -100,8 +103,11 @@ with st.sidebar:
             st.rerun()
 
 image_path = Path("Image/20200326_101256.jpg")
+
 if image_path.exists():
-    st.image(str(image_path), caption="Image satellite", use_column_width=True)
+    img = Image.open(image_path)
+    img = img.resize((400, 300))  # Ajuste les dimensions selon ton besoin
+    st.image(img, caption="Image satellite")
 else:
     st.warning("⚠️ L'image Image/20200326_101256.jpg est introuvable. Vérifie le chemin.")
 st.title("🌾 Smart Yield App")
