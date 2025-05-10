@@ -14,8 +14,17 @@ import pandas as pd
 import seaborn as sns
 import shap
 import streamlit as st
+from PIL import Image
 from PIL import UnidentifiedImageError
 from streamlit_folium import st_folium
+import datetime
+import os
+
+import numpy as np
+import pandas as pd
+import streamlit as st
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
 
 DATA_DIR = "data"
 MODEL_FILE = os.path.join(DATA_DIR, "yield_model.pkl")
@@ -29,7 +38,7 @@ os.makedirs(DATA_DIR, exist_ok=True)
 # =========================================
 #         INITIAL SETUP & AUTH FILE
 # =========================================
-st.set_page_config(page_title="Smart Yield Predictor", layout="wide")
+
 
 USERS_FILE = "users.json"
 MODEL_FILE = "yield_model.pkl"
@@ -102,18 +111,20 @@ with st.sidebar:
             st.success("Logged out successfully.")
             st.rerun()
 
-image_path = r"C:\Users\moham\Documents\app\cleaned-repo\Image\20200326_101256.jpg"  # Chemin absolu
-# Ou bien : 
-# image_path = Path("Image/20200326_101256.jpg")  # Chemin relatif avec Path
+image_path = Path
+(r"C:\Users\moham\Documents\app\cleaned-repo\Image\20200326_101256.jpg")
 
-# Vérification si l'image existe
-if os.path.exists(image_path):
+# Affiche le chemin pour debug
+st.write(f"Chemin image : {image_path}")
+
+if image_path.exists():
     img = Image.open(image_path)
-    img = img.resize((400, 300))  # Ajuste les dimensions
-    st.image(img, caption="Image satellite", use_column_width=True)
+    img = img.resize((400, 300))  # Ajuste les dimensions si nécessaire
+    st.image(img, caption="Image satellite")
 else:
     st.warning("⚠️ L'image n'a pas été trouvée. Vérifie le chemin.")
-st.title("🌾 Smart Yield App")
+    st.set_page_config(page_title="Smart Yield Predictor", layout="wide")
+st.title("🌾 Smart AgriNest")
 
 # =========================================
 #           ADMIN PAGE
@@ -394,16 +405,6 @@ def load_cnn_model():
     model_path = "path_to_your_saved_model"  # Replace with your actual model path
     model = load_model(model_path)
     return model
-
-
-import datetime
-import os
-
-import numpy as np
-import pandas as pd
-import streamlit as st
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing import image
 
 
 # Function to load the model
