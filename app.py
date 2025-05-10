@@ -102,14 +102,17 @@ with st.sidebar:
             st.success("Logged out successfully.")
             st.rerun()
 
-image_path = Path("Image/20200326_101256.jpg")
+image_path = r"C:\Users\moham\Documents\app\cleaned-repo\Image\20200326_101256.jpg"  # Chemin absolu
+# Ou bien : 
+# image_path = Path("Image/20200326_101256.jpg")  # Chemin relatif avec Path
 
-if image_path.exists():
+# Vérification si l'image existe
+if os.path.exists(image_path):
     img = Image.open(image_path)
-    img = img.resize((400, 300))  # Ajuste les dimensions selon ton besoin
-    st.image(img, caption="Image satellite")
+    img = img.resize((400, 300))  # Ajuste les dimensions
+    st.image(img, caption="Image satellite", use_column_width=True)
 else:
-    st.warning("⚠️ L'image Image/20200326_101256.jpg est introuvable. Vérifie le chemin.")
+    st.warning("⚠️ L'image n'a pas été trouvée. Vérifie le chemin.")
 st.title("🌾 Smart Yield App")
 
 # =========================================
